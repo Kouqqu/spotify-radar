@@ -11,11 +11,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
-    * {
+    *, *::before, *::after {
       -webkit-tap-highlight-color: transparent;
       box-sizing: border-box;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      -khtml-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+      user-select: none !important;
+      -webkit-user-drag: none;
     }
     
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+    }
+
     body {
       background-color: #121212;
       color: #ffffff;
@@ -23,6 +35,7 @@
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      overscroll-behavior-y: contain;
     }
 
     .sp-card {
@@ -247,6 +260,11 @@
 
     </main>
 
+    <!-- Version info -->
+    <footer class="mt-8 mb-6 text-center text-[11px] text-gray-500 font-mono tracking-wider select-none">
+      Spotify Radar <span class="text-[#1ed760]">v1.1.0</span> • 120Hz Native
+    </footer>
+
   </div>
 
   <!-- Share Action Dialog -->
@@ -394,6 +412,13 @@
         if (b) b.style.display = 'none';
       }
     })();
+
+    // Отключаем системное контекстное меню и лупу при долгом тапе
+    window.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    });
 
     function triggerHaptic(duration = 15) {
       if (navigator.vibrate) {

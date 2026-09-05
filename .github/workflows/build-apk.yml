@@ -31,6 +31,14 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Setup persistent debug keystore
+        run: |
+          mkdir -p ~/.android
+          if [ -f "debug.keystore" ]; then
+            cp debug.keystore ~/.android/debug.keystore
+            echo "Persistent debug.keystore configured successfully"
+          fi
+
       - name: Prepare web assets
         run: |
           mkdir -p www
@@ -59,17 +67,17 @@ jobs:
         continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0-${{ github.run_number }}
-          name: "Spotify Radar APK (v1.0.${{ github.run_number }})"
+          tag_name: v1.1.0-${{ github.run_number }}
+          name: "Spotify Radar v1.1.${{ github.run_number }}"
           body: |
-            ### 🎧 Spotify Top 500 Radar — Android APK
+            Обновление Spotify Radar для Android:
+            - Отключено системное выделение текста и вибрация при удержании пальца (нативный вид приложения).
+            - Фиксированная цифровая подпись для бесшовной установки обновлений.
+            - Исправлен шеринг результатов и экспорт сторис.
             
-            Автоматическая сборка приложения для Android!
-            
-            **Как установить:**
-            1. Скачай прикрепленный файл `app-debug.apk`.
-            2. Открой его на телефоне и нажми «Установить».
-            3. Запускай приложение прямо с рабочего стола!
+            Как обновить:
+            1. Скачай `app-debug.apk`.
+            2. Если предыдущая версия была установлена ранее, удали её один раз, чтобы обновился ключ подписи. Все последующие обновления будут ставиться поверх автоматически в один клик.
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
