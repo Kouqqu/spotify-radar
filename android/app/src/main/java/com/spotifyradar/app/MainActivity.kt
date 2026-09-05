@@ -1,7 +1,9 @@
 package com.spotifyradar.app
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.widget.Toast
@@ -33,11 +35,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -62,6 +66,7 @@ val SpotifyTextSecondary = Color(0xFFB3B3B3)
 fun SpotifyRadarApp() {
     val context = LocalContext.current
     val view = LocalView.current
+    val coroutineScope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf(0) }
     var textInput by remember { mutableStateOf("") }
@@ -71,9 +76,18 @@ fun SpotifyRadarApp() {
     var isIndieExpanded by remember { mutableStateOf(false) }
     var selectedArtistForDetails by remember { mutableStateOf<Pair<String, List<String>>?>(null) }
     var storyBitmap by remember { mutableStateOf<Bitmap?>(null) }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
     fun haptic() {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+    }
+
+    // Auto-check for GitHub updates on app launch
+    LaunchedEffect(Unit) {
+        val info = UpdateChecker.checkForUpdates(context)
+        if (info != null) {
+            updateInfo = info
+        }
     }
 
     // Memoized filtered lists
@@ -150,6 +164,32 @@ fun SpotifyRadarApp() {
                                 .background(SpotifyGreen.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         )
+                    }
+                },
+                actions = {
+                    // GitHub Link Button
+                    IconButton(
+                        onClick = {
+                            haptic()
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Kouqqu/spotify-radar"))
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF222222))
+                                .border(1.dp, SpotifyBorder, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_github),
+                                contentDescription = "GitHub",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SpotifyBlack)
@@ -630,10 +670,97 @@ fun SpotifyRadarApp() {
                     color = Color(0xFF666666),
                     fontSize = 11.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            coroutineScope.launch {
+                                Toast.makeText(context, "Проверка обновлений...", Toast.LENGTH_SHORT).show()
+                                val info = UpdateChecker.checkForUpdates(context)
+                                if (info != null) {
+                                    updateInfo = info
+                                } else {
+                                    Toast.makeText(context, "У вас последняя версия!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        .padding(bottom = 24.dp)
                 )
             }
         }
+    }
+
+    // Modal: Update Available Dialog
+    val update = updateInfo
+    if (update != null) {
+        AlertDialog(
+            onDismissRequest = { updateInfo = null },
+            icon = { Text("🚀", fontSize = 32.sp) },
+            title = {
+                Text(
+                    text = "Доступно обновление!",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = update.title,
+                        color = SpotifyGreen,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp
+                    )
+                    if (update.body.isNotBlank()) {
+                        Text(
+                            text = update.body.lines().take(6).joinToString("\n"),
+                            color = SpotifyTextSecondary,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp
+                        )
+                    }
+                    Text(
+                        text = "Желаете скачать новую версию?",
+                        color = Color.White,
+                        fontSize = 13.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(update.downloadUrl))
+                        context.startActivity(intent)
+                        updateInfo = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Скачать", color = Color.Black, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TextButton(
+                        onClick = {
+                            UpdateChecker.ignoreVersion(context, update.tag)
+                            updateInfo = null
+                            Toast.makeText(context, "Больше не напоминать для этой версии", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text("Не напоминать", color = Color.Gray, fontSize = 12.sp)
+                    }
+                    TextButton(onClick = { updateInfo = null }) {
+                        Text("Позже", color = Color.White, fontSize = 12.sp)
+                    }
+                }
+            },
+            containerColor = Color(0xFF1E1E1E),
+            shape = RoundedCornerShape(18.dp)
+        )
     }
 
     // Modal: Song Details

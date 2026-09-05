@@ -31,6 +31,11 @@ jobs:
         with:
           gradle-version: '8.4'
 
+      - name: Inject Build Version
+        run: |
+          sed -i "s/CURRENT_RUN_NUMBER = .*/CURRENT_RUN_NUMBER = ${{ github.run_number }}/" android/app/src/main/java/com/spotifyradar/app/AppVersion.kt
+          sed -i "s/CURRENT_TAG = .*/CURRENT_TAG = \"v1.2.0-${{ github.run_number }}\"/" android/app/src/main/java/com/spotifyradar/app/AppVersion.kt
+
       - name: Build Native APK with Gradle
         run: |
           cd android
