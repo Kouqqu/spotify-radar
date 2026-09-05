@@ -74,6 +74,19 @@ fun SpotifyRadarApp() {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
     }
 
+    // Memoized filtered lists placed in Composable scope
+    val result = analysisResult
+    val filteredMatched = remember(result?.matchedArtists, searchQuery) {
+        val list = result?.matchedArtists ?: emptyList()
+        if (searchQuery.isBlank()) list
+        else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
+    val filteredIndie = remember(result?.indieArtists, searchQuery) {
+        val list = result?.indieArtists ?: emptyList()
+        if (searchQuery.isBlank()) list
+        else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
+
     // CSV File Picker launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -234,24 +247,7 @@ fun SpotifyRadarApp() {
                         OutlinedButton(
                             onClick = {
                                 haptic()
-                                val demoText = """
-                                    The Weeknd
-                                    Taylor Swift
-                                    Billie Eilish
-                                    Post Malone
-                                    Dua Lipa
-                                    Kanye West
-                                    Lana Del Rey
-                                    Kendrick Lamar
-                                    Shortparis
-                                    Хаски
-                                    Дайте Танк (!)
-                                    Molchat Doma
-                                    Bones
-                                    IC3PEAK
-                                    Saluki
-                                    Boulevard Depo
-                                """.trimIndent()
+                                val demoText = "The Weeknd\nTaylor Swift\nBillie Eilish\nPost Malone\nDua Lipa\nKanye West\nLana Del Rey\nKendrick Lamar\nShortparis\nХаски\nДайте Танк (!)\nMolchat Doma\nBones\nIC3PEAK\nSaluki\nBoulevard Depo"
                                 val demoTracks = RadarAnalyzer.parseText(demoText)
                                 analysisResult = RadarAnalyzer.analyze(demoTracks)
                                 Toast.makeText(context, "Загружен демо-плейлист", Toast.LENGTH_SHORT).show()
@@ -294,10 +290,7 @@ fun SpotifyRadarApp() {
                             value = textInput,
                             onValueChange = { textInput = it },
                             placeholder = {
-                                Text("The Weeknd
-Billie Eilish
-Хаски
-Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
+                                Text("The Weeknd, Billie Eilish, Lana Del Rey...", color = Color.DarkGray, fontSize = 13.sp)
                             },
                             modifier = Modifier.fillMaxWidth().height(140.dp),
                             shape = RoundedCornerShape(12.dp),
@@ -331,18 +324,7 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
             }
 
             // Analysis Result Section
-            val result = analysisResult
             if (result != null) {
-                // Memoized filtered lists for butter-smooth 120 FPS scrolling
-                val filteredMatched = remember(result.matchedArtists, searchQuery) {
-                    if (searchQuery.isBlank()) result.matchedArtists
-                    else result.matchedArtists.filter { it.name.contains(searchQuery, ignoreCase = true) }
-                }
-                val filteredIndie = remember(result.indieArtists, searchQuery) {
-                    if (searchQuery.isBlank()) result.indieArtists
-                    else result.indieArtists.filter { it.name.contains(searchQuery, ignoreCase = true) }
-                }
-
                 // Verdict Card
                 item {
                     Column(
@@ -486,18 +468,12 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
                         Button(
                             onClick = {
                                 haptic()
-                                val shareText = "${result.verdictEmoji} Мой Spotify Top 500 Radar:
-" +
-                                        "🏆 Вердикт: ${result.verdictTitle}
-" +
-                                        "📊 В Топ-500: ${result.matchedCount} артистов
-" +
-                                        "👑 Топ-1: ${result.highestArtist?.name ?: "—"} (#${result.highestArtist?.rank ?: "—"})
-" +
-                                        "🎧 Процент чартов: ${result.chartPercentage}%
-
-" +
-                                        "Проверь свой вкус: saaanek.github.io/spotify-radar"
+                                val shareText = "${result.verdictEmoji} Мой Spotify Top 500 Radar:\n" +
+                                        "🏆 Вердикт: ${result.verdictTitle}\n" +
+                                        "📊 В Топ-500: ${result.matchedCount} артистов\n" +
+                                        "👑 Топ-1: ${result.highestArtist?.name ?: "—"} (#${result.highestArtist?.rank ?: "—"})\n" +
+                                        "🎧 Процент чартов: ${result.chartPercentage}%\n\n" +
+                                        "saaanek.github.io/spotify-radar"
                                 val sendIntent = Intent().apply {
                                     action = Intent.ACTION_SEND
                                     type = "text/plain"
@@ -513,7 +489,7 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
                     }
                 }
 
-                // Search Filter for lists (only shown if at least one list is expanded)
+                // Search Filter for lists (shown if at least one list is expanded)
                 if (isMatchedExpanded || isIndieExpanded) {
                     item {
                         OutlinedTextField(
@@ -572,10 +548,11 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
-                        Icon(
-                            imageVector = if (isMatchedExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                            contentDescription = if (isMatchedExpanded) "Свернуть" else "Развернуть",
-                            tint = Color.White
+                        Text(
+                            text = if (isMatchedExpanded) "▲" else "▼",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -676,10 +653,11 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
-                        Icon(
-                            imageVector = if (isIndieExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
-                            contentDescription = if (isIndieExpanded) "Свернуть" else "Развернуть",
-                            tint = Color.White
+                        Text(
+                            text = if (isIndieExpanded) "▲" else "▼",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
@@ -742,7 +720,7 @@ Lana Del Rey", color = Color.DarkGray, fontSize = 13.sp)
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Spotify Radar • v1.2",
+                    text = "Spotify Radar",
                     color = Color(0xFF666666),
                     fontSize = 11.sp,
                     textAlign = TextAlign.Center,
