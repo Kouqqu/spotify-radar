@@ -76,18 +76,6 @@ fun SpotifyRadarApp() {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
     }
 
-    // Animated chevron rotations
-    val rotationMatched by animateFloatAsState(
-        targetValue = if (isMatchedExpanded) 180f else 0f,
-        animationSpec = tween(280, easing = FastOutSlowInEasing),
-        label = "rotationMatched"
-    )
-    val rotationIndie by animateFloatAsState(
-        targetValue = if (isIndieExpanded) 180f else 0f,
-        animationSpec = tween(280, easing = FastOutSlowInEasing),
-        label = "rotationIndie"
-    )
-
     // Memoized filtered lists
     val result = analysisResult
     val filteredMatched = remember(result?.matchedArtists, searchQuery) {
@@ -507,7 +495,7 @@ fun SpotifyRadarApp() {
                                         "📊 В Топ-500: ${result.matchedCount} артистов\n" +
                                         "👑 Топ-1: ${result.highestArtist?.name ?: "—"} (#${result.highestArtist?.rank ?: "—"})\n" +
                                         "🎧 Процент чартов: ${result.chartPercentage}%\n\n" +
-                                        "saaanek.github.io/spotify-radar"
+                                        "kouqqu.github.io/spotify-radar"
                                 val sendIntent = Intent().apply {
                                     action = Intent.ACTION_SEND
                                     type = "text/plain"
@@ -541,194 +529,93 @@ fun SpotifyRadarApp() {
                     }
                 }
 
-                // 1. Accordion Header: Matched Artists List
+                // 1. Accordion Section: Matched Artists List
                 item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(SpotifyCard)
-                            .border(1.dp, SpotifyBorder, RoundedCornerShape(14.dp))
-                            .clickable {
-                                haptic()
-                                isMatchedExpanded = !isMatchedExpanded
-                            }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(SpotifyGreen)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Найдено в Топ-500",
-                                color = Color.White,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "${result.matchedArtists.size}",
-                                color = SpotifyGreen,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .background(SpotifyGreen.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
+                    AccordionSection(
+                        title = "Найдено в Топ-500",
+                        count = result.matchedArtists.size,
+                        indicatorColor = SpotifyGreen,
+                        isExpanded = isMatchedExpanded,
+                        onToggle = {
+                            haptic()
+                            isMatchedExpanded = !isMatchedExpanded
                         }
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = if (isMatchedExpanded) "Свернуть" else "Развернуть",
-                            tint = Color.White,
-                            modifier = Modifier.rotate(rotationMatched)
-                        )
-                    }
-                }
-
-                // Animated Dropdown Content for Matched Artists
-                item {
-                    AnimatedVisibility(
-                        visible = isMatchedExpanded,
-                        enter = expandVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(250)),
-                        exit = shrinkVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(200))
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (filteredMatched.isEmpty()) {
-                                Text(
-                                    text = "Ничего не найдено",
-                                    color = Color.Gray,
-                                    fontSize = 13.sp,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        if (filteredMatched.isEmpty()) {
+                            Text(
+                                text = "Ничего не найдено",
+                                color = Color.Gray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        } else {
+                            val displayList = filteredMatched.take(80)
+                            displayList.forEach { artist ->
+                                ArtistRow(
+                                    rankText = "#${artist.rank}",
+                                    rankColor = SpotifyGreen,
+                                    artistName = artist.name,
+                                    tracksCount = artist.tracks.size,
+                                    onClick = {
+                                        haptic()
+                                        selectedArtistForDetails = Pair(artist.name, artist.tracks)
+                                    }
                                 )
-                            } else {
-                                val displayList = filteredMatched.take(80)
-                                displayList.forEach { artist ->
-                                    ArtistRow(
-                                        rankText = "#${artist.rank}",
-                                        rankColor = SpotifyGreen,
-                                        artistName = artist.name,
-                                        tracksCount = artist.tracks.size,
-                                        onClick = {
-                                            haptic()
-                                            selectedArtistForDetails = Pair(artist.name, artist.tracks)
-                                        }
-                                    )
-                                }
-                                if (filteredMatched.size > 80) {
-                                    Text(
-                                        text = "Показано 80 из ${filteredMatched.size} артистов",
-                                        color = Color.Gray,
-                                        fontSize = 11.sp,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                                    )
-                                }
                             }
-                        }
-                    }
-                }
-
-                // 2. Accordion Header: Indie Artists List
-                item {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(SpotifyCard)
-                            .border(1.dp, SpotifyBorder, RoundedCornerShape(14.dp))
-                            .clickable {
-                                haptic()
-                                isIndieExpanded = !isIndieExpanded
-                            }
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFB388FF))
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Андеграунд (вне чартов)",
-                                color = Color.White,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "${result.indieArtists.size}",
-                                color = Color(0xFFB388FF),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .background(Color(0xFFB388FF).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
-                        }
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = if (isIndieExpanded) "Свернуть" else "Развернуть",
-                            tint = Color.White,
-                            modifier = Modifier.rotate(rotationIndie)
-                        )
-                    }
-                }
-
-                // Animated Dropdown Content for Indie Artists
-                item {
-                    AnimatedVisibility(
-                        visible = isIndieExpanded,
-                        enter = expandVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeIn(animationSpec = tween(250)),
-                        exit = shrinkVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) + fadeOut(animationSpec = tween(200))
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (filteredIndie.isEmpty()) {
+                            if (filteredMatched.size > 80) {
                                 Text(
-                                    text = "Ничего не найдено",
+                                    text = "Показано 80 из ${filteredMatched.size} артистов",
                                     color = Color.Gray,
-                                    fontSize = 13.sp,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
                                 )
-                            } else {
-                                val displayList = filteredIndie.take(80)
-                                displayList.forEach { artist ->
-                                    ArtistRow(
-                                        rankText = "●",
-                                        rankColor = Color(0xFFB388FF),
-                                        artistName = artist.name,
-                                        tracksCount = artist.tracks.size,
-                                        onClick = {
-                                            haptic()
-                                            selectedArtistForDetails = Pair(artist.name, artist.tracks)
-                                        }
-                                    )
-                                }
-                                if (filteredIndie.size > 80) {
-                                    Text(
-                                        text = "Показано 80 из ${filteredIndie.size} артистов",
-                                        color = Color.Gray,
-                                        fontSize = 11.sp,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                                    )
-                                }
+                            }
+                        }
+                    }
+                }
+
+                // 2. Accordion Section: Indie Artists List
+                item {
+                    AccordionSection(
+                        title = "Андеграунд (вне чартов)",
+                        count = result.indieArtists.size,
+                        indicatorColor = Color(0xFFB388FF),
+                        isExpanded = isIndieExpanded,
+                        onToggle = {
+                            haptic()
+                            isIndieExpanded = !isIndieExpanded
+                        }
+                    ) {
+                        if (filteredIndie.isEmpty()) {
+                            Text(
+                                text = "Ничего не найдено",
+                                color = Color.Gray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        } else {
+                            val displayList = filteredIndie.take(80)
+                            displayList.forEach { artist ->
+                                ArtistRow(
+                                    rankText = "●",
+                                    rankColor = Color(0xFFB388FF),
+                                    artistName = artist.name,
+                                    tracksCount = artist.tracks.size,
+                                    onClick = {
+                                        haptic()
+                                        selectedArtistForDetails = Pair(artist.name, artist.tracks)
+                                    }
+                                )
+                            }
+                            if (filteredIndie.size > 80) {
+                                Text(
+                                    text = "Показано 80 из ${filteredIndie.size} артистов",
+                                    color = Color.Gray,
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                                )
                             }
                         }
                     }
@@ -868,6 +755,91 @@ fun SpotifyRadarApp() {
 }
 
 @Composable
+fun AccordionSection(
+    title: String,
+    count: Int,
+    indicatorColor: Color,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val rotation by animateFloatAsState(
+        targetValue = if (isExpanded) 180f else 0f,
+        animationSpec = tween(280, easing = FastOutSlowInEasing),
+        label = "chevronRotation"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(SpotifyCard)
+            .border(1.dp, SpotifyBorder, RoundedCornerShape(16.dp))
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = 0.82f,
+                    stiffness = 380f
+                )
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(indicatorColor)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = title,
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "$count",
+                    color = indicatorColor,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .background(indicatorColor.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.rotate(rotation)
+            )
+        }
+
+        if (isExpanded) {
+            HorizontalDivider(
+                color = SpotifyBorder,
+                thickness = 1.dp
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                content = content
+            )
+        }
+    }
+}
+
+@Composable
 fun TabButton(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -922,10 +894,11 @@ fun ArtistRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SpotifyCard, RoundedCornerShape(12.dp))
-            .border(1.dp, SpotifyBorder, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(10.dp))
+            .background(Color(0xFF222222))
+            .border(1.dp, Color(0xFF2E2E2E), RoundedCornerShape(10.dp))
             .clickable(onClick = onClick)
-            .padding(12.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -933,7 +906,7 @@ fun ArtistRow(
             color = rankColor,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.width(44.dp)
+            modifier = Modifier.width(42.dp)
         )
         Text(
             text = artistName,

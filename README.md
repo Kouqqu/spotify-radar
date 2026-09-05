@@ -2,7 +2,7 @@
 
 Проверь, сколько твоих любимых артистов и треков входят в мировой чарт Топ-500 Spotify.
 
-[Открыть в браузере](https://saaanek.github.io/spotify-radar/) • [Скачать для Android (.apk)](https://github.com/SaaaNek/spotify-radar/releases)
+[Открыть в браузере](https://kouqqu.github.io/spotify-radar/) • [Скачать для Android (.apk)](https://github.com/Kouqqu/spotify-radar/releases)
 
 ---
 
@@ -17,7 +17,7 @@
 
 ## Установка на Android
 
-1. Скачай `app-debug.apk` со страницы [Releases](https://github.com/SaaaNek/spotify-radar/releases).
+1. Скачай `app-debug.apk` со страницы [Releases](https://github.com/Kouqqu/spotify-radar/releases).
 2. Открой файл на телефоне и подтверди установку.
 
 ---

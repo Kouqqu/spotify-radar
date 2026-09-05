@@ -266,7 +266,7 @@ object StoryCardGenerator {
             textSize = 24f
             textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("Spotify Top 500 Radar • saaanek.github.io/spotify-radar", width / 2f, 1820f, footerPaint)
+        canvas.drawText("Spotify Top 500 Radar • kouqqu.github.io/spotify-radar", width / 2f, 1820f, footerPaint)
 
         return bitmap
     }

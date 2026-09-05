@@ -91,7 +91,7 @@
         <i class="fa-brands fa-android text-[#1ed760] text-lg"></i>
         <span class="text-gray-300">Официальное Android-приложение</span>
       </div>
-      <a href="https://github.com/SaaaNek/spotify-radar/releases" target="_blank" class="sp-btn-press bg-[#1ed760] text-black font-bold px-3 py-1.5 rounded-full transition text-[11px]">
+      <a href="https://github.com/Kouqqu/spotify-radar/releases" target="_blank" class="sp-btn-press bg-[#1ed760] text-black font-bold px-3 py-1.5 rounded-full transition text-[11px]">
         Скачать .apk
       </a>
     </div>
@@ -695,7 +695,7 @@
         `• В Топ-500: ${matchedCount} артистов\n` +
         `• Топ-1: ${highestName} (${highestRank})\n` +
         `• Вхождение в чарты: ${percentStr}\n\n` +
-        `Проверь свой плейлист: https://saaanek.github.io/spotify-radar/`;
+        `Проверь свой плейлист: https://kouqqu.github.io/spotify-radar/`;
     }
 
     function openShareModal() {
@@ -719,7 +719,7 @@
     function shareToTelegram() {
       triggerHaptic(15);
       const text = encodeURIComponent(getShareSummaryText());
-      const siteUrl = encodeURIComponent('https://saaanek.github.io/spotify-radar/');
+      const siteUrl = encodeURIComponent('https://kouqqu.github.io/spotify-radar/');
       // Передаем валидный URL и текст, чтобы открывался именно диалог пересылки Telegram
       window.open(`https://t.me/share/url?url=${siteUrl}&text=${text}`, '_blank');
       closeShareModal();
@@ -735,7 +735,7 @@
     function shareToVK() {
       triggerHaptic(15);
       const text = encodeURIComponent(getShareSummaryText());
-      const siteUrl = encodeURIComponent('https://saaanek.github.io/spotify-radar/');
+      const siteUrl = encodeURIComponent('https://kouqqu.github.io/spotify-radar/');
       window.open(`https://vk.com/share.php?url=${siteUrl}&title=${text}`, '_blank');
       closeShareModal();
     }
@@ -748,7 +748,7 @@
           await navigator.share({
             title: 'Spotify Top 500 Radar',
             text: getShareSummaryText(),
-            url: 'https://saaanek.github.io/spotify-radar/'
+            url: 'https://kouqqu.github.io/spotify-radar/'
           });
         } catch (e) {}
       } else {
@@ -891,7 +891,7 @@
       ctx.fillStyle = '#666666';
       ctx.font = '28px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Spotify Top 500 Radar • saaanek.github.io/spotify-radar', 540, 1720);
+      ctx.fillText('Spotify Top 500 Radar • kouqqu.github.io/spotify-radar', 540, 1720);
 
       // Синхронный экспорт картинки
       const dataUrl = canvas.toDataURL('image/png');
