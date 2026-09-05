@@ -166,8 +166,19 @@
   <!-- Content Layer -->
   <div class="w-full max-w-2xl relative z-10 flex flex-col items-center">
 
+    <!-- Web Only Banner (Auto-hidden in native app) -->
+    <div id="webDownloadBanner" class="w-full mb-4 p-2.5 px-4 rounded-2xl liquid-glass-subtle border border-white/15 flex items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2.5 truncate">
+        <i class="fa-brands fa-android text-[#1ed760] text-lg"></i>
+        <span class="text-gray-300 truncate">Доступно Android-приложение!</span>
+      </div>
+      <a href="https://github.com/SaaaNek/spotify-radar/releases" target="_blank" class="spring-tap bg-[#1ed760]/20 hover:bg-[#1ed760]/30 text-[#1ed760] border border-[#1ed760]/40 font-bold px-3 py-1.5 rounded-xl transition shrink-0 flex items-center gap-1.5 text-[11px]">
+        <i class="fa-solid fa-download"></i> Скачать .apk
+      </a>
+    </div>
+
     <!-- Header -->
-    <header class="text-center my-6 sm:my-8 flex flex-col items-center">
+    <header class="text-center my-4 sm:my-6 flex flex-col items-center">
       <div class="inline-flex items-center gap-3.5 mb-2">
         <div class="w-12 h-12 rounded-2xl liquid-glass-subtle flex items-center justify-center shadow-lg shadow-[#1ed760]/10">
           <i class="fa-brands fa-spotify text-3xl text-[#1ed760] filter drop-shadow-[0_0_12px_rgba(30,215,96,0.4)]"></i>
@@ -230,7 +241,7 @@
         >
           <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
           
-          <div class="w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/15 flex items-center justify-center mb-3 text-2xl text-[#1ed760] group-hover:scale-110 transition-transform duration-300 shadow-inner">
+          <div class="w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center mb-3 text-2xl text-[#1ed760] group-hover:scale-110 transition-transform duration-300 shadow-inner">
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
           <h3 class="font-bold text-sm sm:text-base text-white mb-1">Выбери или перетащи .csv файл</h3>
@@ -241,7 +252,7 @@
           </span>
         </div>
 
-        <div id="fileInfo" class="hidden mt-4 p-3.5 rounded-2xl bg-white/[0.06] border border-white/15 flex items-center justify-between text-xs backdrop-blur-md">
+        <div id="fileInfo" class="hidden mt-4 p-3.5 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs backdrop-blur-md">
           <div class="flex items-center gap-2 truncate max-w-[70%]">
             <i class="fa-solid fa-file-lines text-[#1ed760]"></i>
             <span id="fileName" class="text-gray-200 font-medium truncate">playlist.csv</span>
@@ -293,7 +304,7 @@
         </div>
 
         <!-- Verdict + Share Glass Card -->
-        <div id="verdictBox" class="liquid-glass p-5 sm:p-6 rounded-3xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div id="verdictBox" class="liquid-glass p-5 sm:p-6 rounded-3xl border-l-4 border-[#1ed760] flex flex-col gap-4">
           <div class="flex items-center gap-4">
             <div id="verdictEmoji" class="text-4xl sm:text-5xl shrink-0 filter drop-shadow-md">🎧</div>
             <div>
@@ -304,9 +315,16 @@
               <p id="verdictDesc" class="text-xs sm:text-sm text-gray-300 mt-1 leading-relaxed">...</p>
             </div>
           </div>
-          <button onclick="shareResult()" class="spring-tap shrink-0 w-full sm:w-auto bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-            <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Поделиться
-          </button>
+          
+          <!-- Share Actions (Native Android Share + Story Card Generator) -->
+          <div class="flex flex-col sm:flex-row gap-2.5 pt-2 border-t border-white/10">
+            <button onclick="shareResult()" class="spring-tap flex-1 bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold py-2.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> <span id="shareBtnLabel">Поделиться</span>
+            </button>
+            <button onclick="generateStoryCard()" class="spring-tap flex-1 bg-gradient-to-r from-purple-500/20 to-[#1ed760]/20 hover:from-purple-500/30 hover:to-[#1ed760]/30 border border-white/20 text-white text-xs font-bold py-2.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <i class="fa-solid fa-wand-magic-sparkles text-purple-300"></i> Создать Stories-карточку
+            </button>
+          </div>
         </div>
 
         <!-- Matched Top Artists Panel -->
@@ -434,6 +452,24 @@
     let currentAnalysisData = { matched: {}, indie: {} };
     let rawMatchedList = [];
     let rawIndieList = [];
+
+    // Определение: Сайт или Нативное Android-приложение
+    function isNativeApp() {
+      return !!(window.Capacitor?.isNativePlatform() || 
+                window.matchMedia('(display-mode: standalone)').matches ||
+                navigator.userAgent.includes('wv') ||
+                window.navigator.standalone === true);
+    }
+
+    // Инициализация отображения элементов в зависимости от среды
+    (function initEnvironment() {
+      if (isNativeApp()) {
+        const banner = document.getElementById('webDownloadBanner');
+        if (banner) banner.style.display = 'none';
+        const shareLabel = document.getElementById('shareBtnLabel');
+        if (shareLabel) shareLabel.innerText = 'Поделиться в приложении';
+      }
+    })();
 
     // Тактильный виброотклик для Android / Mobile
     function triggerHaptic(duration = 15) {
@@ -712,7 +748,8 @@
       renderIndieList(filtered);
     }
 
-    function shareResult() {
+    // Нативная пересылка для Android / fallback для ПК
+    async function shareResult() {
       triggerHaptic(25);
       if (!currentAnalysisData.matched) return;
 
@@ -730,6 +767,22 @@
         `• Совпадение с чартами: ${percentStr}\n\n` +
         `Проверь свой плейлист на Spotify Top 500 Radar! 🎧`;
 
+      // Проверяем, есть ли нативное меню "Поделиться" (Telegram/WhatsApp в Android)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Spotify Top 500 Radar',
+            text: shareText,
+            url: window.location.href.includes('github.io') ? window.location.href : 'https://github.com/SaaaNek/spotify-radar'
+          });
+          return;
+        } catch (err) {
+          // Если пользователь просто закрыл меню шеринга
+          if (err.name === 'AbortError') return;
+        }
+      }
+
+      // Fallback: Буфер обмена
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareText).then(() => {
           showToast("Результат скопирован в буфер обмена!");
@@ -739,6 +792,215 @@
       } else {
         fallbackCopyText(shareText);
       }
+    }
+
+    // Генерация Stories-карточки (Графическая пересылка высокого качества)
+    async function generateStoryCard() {
+      triggerHaptic(30);
+      if (!currentAnalysisData.matched) return;
+
+      showToast("Генерирую Stories-карточку...");
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 1080;
+      canvas.height = 1920;
+
+      // Фон
+      ctx.fillStyle = '#07080a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Неоновые градиентные сферы
+      const grad1 = ctx.createRadialGradient(540, 300, 50, 540, 300, 700);
+      grad1.addColorStop(0, 'rgba(30, 215, 96, 0.28)');
+      grad1.addColorStop(1, 'rgba(30, 215, 96, 0)');
+      ctx.fillStyle = grad1;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const grad2 = ctx.createRadialGradient(850, 1200, 50, 850, 1200, 600);
+      grad2.addColorStop(0, 'rgba(168, 85, 247, 0.2)');
+      grad2.addColorStop(1, 'rgba(168, 85, 247, 0)');
+      ctx.fillStyle = grad2;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Стеклянная центральная панель
+      ctx.fillStyle = 'rgba(20, 24, 32, 0.82)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+      ctx.lineWidth = 3;
+      drawRoundRect(ctx, 90, 160, 900, 1600, 50);
+      ctx.fill();
+      ctx.stroke();
+
+      // Верхний глянцевый блик стекла
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(160, 160);
+      ctx.lineTo(920, 160);
+      ctx.stroke();
+
+      // Заголовок
+      ctx.fillStyle = '#1ed760';
+      ctx.font = 'bold 36px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPOTIFY TOP 500 RADAR', 540, 280);
+
+      // Эмодзи вердикта
+      const vEmoji = document.getElementById('verdictEmoji').innerText || '🎧';
+      ctx.font = '140px -apple-system, sans-serif';
+      ctx.fillText(vEmoji, 540, 460);
+
+      // Название вердикта
+      const vTitle = document.getElementById('verdictTitle').innerText || 'Вердикт';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 64px -apple-system, sans-serif';
+      ctx.fillText(vTitle, 540, 560);
+
+      // Описание вердикта
+      const vDesc = document.getElementById('verdictDesc').innerText || '';
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '32px -apple-system, sans-serif';
+      drawWrappedText(ctx, vDesc, 540, 630, 760, 46);
+
+      // Линия разделителя
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(170, 760);
+      ctx.lineTo(910, 760);
+      ctx.stroke();
+
+      // Метрики
+      const matchedCount = document.getElementById('matchedCount').innerText || '0';
+      const topTracks = document.getElementById('topTracksStats').innerText || '0';
+      const highestName = document.getElementById('highestName').innerText || '—';
+      const highestRank = document.getElementById('highestRank').innerText || '—';
+
+      drawStatBlock(ctx, 150, 810, 240, 180, 'В ТОП-500', matchedCount, '#1ed760');
+      drawStatBlock(ctx, 420, 810, 240, 180, 'ПЕСЕН В ТОПЕ', topTracks, '#ffffff');
+      drawStatBlock(ctx, 690, 810, 240, 180, 'ТОП-1 АРТИСТ', highestRank, '#a855f7', highestName);
+
+      // Список топ артистов
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 36px -apple-system, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('Твои чарт-топперы:', 150, 1100);
+
+      let yPos = 1160;
+      const topMatches = rawMatchedList.slice(0, 4);
+      topMatches.forEach((artist) => {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        drawRoundRect(ctx, 150, yPos, 780, 84, 22);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1ed760';
+        ctx.font = 'bold 30px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText(`#${artist.rank}`, 180, yPos + 53);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 30px -apple-system, sans-serif';
+        ctx.fillText(artist.name, 280, yPos + 53);
+
+        ctx.fillStyle = '#1ed760';
+        ctx.font = 'bold 26px -apple-system, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${artist.tracks.length} ${getSongWord(artist.tracks.length)}`, 900, yPos + 53);
+
+        yPos += 104;
+      });
+
+      // Водяной знак
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '28px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Spotify Top 500 Radar • Попробуй тоже', 540, 1680);
+
+      // Экспорт в PNG
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'spotify-radar-story.png', { type: 'image/png' });
+
+        // Если устройство поддерживает нативный шеринг картинок (Android/iOS)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Мой Spotify Top 500 Radar',
+              text: 'Мой музыкальный вердикт в Spotify Radar! 🎧'
+            });
+            return;
+          } catch (e) {
+            if (e.name === 'AbortError') return;
+          }
+        }
+
+        // Скачивание картинки
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'spotify-radar-story.png';
+        link.click();
+        showToast('Stories-карточка сохранена в галерею!');
+      }, 'image/png');
+    }
+
+    // Вспомогательные функции для Canvas
+    function drawRoundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawStatBlock(ctx, x, y, w, h, label, val, valColor, subLabel) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      drawRoundRect(ctx, x, y, w, h, 24);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '22px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + w / 2, y + 45);
+
+      ctx.fillStyle = valColor;
+      ctx.font = 'bold 50px -apple-system, sans-serif';
+      ctx.fillText(val, x + w / 2, y + 110);
+
+      if (subLabel) {
+        ctx.fillStyle = '#d1d5db';
+        ctx.font = '22px -apple-system, sans-serif';
+        ctx.fillText(subLabel.substring(0, 12), x + w / 2, y + 150);
+      }
+    }
+
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, currentY);
+          line = words[n] + ' ';
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, currentY);
     }
 
     function fallbackCopyText(text) {
