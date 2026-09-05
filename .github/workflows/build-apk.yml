@@ -36,20 +36,13 @@ jobs:
           cd android
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace 2>&1 | tee build.log
-
-      - name: Upload Build Log on Failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: android/build.log
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SpotifyRadar-Native-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
       - name: Create GitHub Release
@@ -67,6 +60,6 @@ jobs:
             - **Шеринг**: системный Android Intent (Telegram, WhatsApp, VK, Stories).
             - **Импорт .csv**: системный проводник Android для выбора плейлиста.
             - **Постоянный ключ подписи**: обновления устанавливаются поверх без ошибок.
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: android/app/build/outputs/apk/debug/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

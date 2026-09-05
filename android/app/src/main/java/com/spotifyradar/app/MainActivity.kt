@@ -283,9 +283,7 @@ fun SpotifyRadarApp() {
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = SpotifyGreen,
-                                unfocusedBorderColor = SpotifyBorder,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                unfocusedBorderColor = SpotifyBorder
                             )
                         )
 
@@ -483,9 +481,7 @@ fun SpotifyRadarApp() {
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = SpotifyGreen,
-                            unfocusedBorderColor = SpotifyBorder,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            unfocusedBorderColor = SpotifyBorder
                         )
                     )
                 }
