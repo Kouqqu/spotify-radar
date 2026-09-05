@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0b0e">
+  <meta name="theme-color" content="#060709">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Spotify Top 500 Radar</title>
@@ -17,6 +17,7 @@
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
+      box-sizing: border-box;
     }
     input, textarea {
       user-select: text;
@@ -24,31 +25,87 @@
     }
     
     body {
-      background: radial-gradient(circle at 50% -10%, rgba(30, 215, 96, 0.08) 0%, rgba(30, 215, 96, 0.01) 40%, transparent 70%), #0a0b0e;
-      color: #f3f3f6;
+      background-color: #060709;
+      color: #f5f5f7;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overscroll-behavior-y: contain;
       min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    /* True Frosted Glass Master Style */
-    .card-glass {
-      background: rgba(22, 24, 30, 0.72);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.09);
+    /* Ambient Mesh Lighting for Glass Refraction */
+    .ambient-mesh {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient-orb-1 {
+      position: absolute;
+      top: -10%;
+      left: 20%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(30, 215, 96, 0.22) 0%, rgba(30, 215, 96, 0.04) 50%, transparent 70%);
+      filter: blur(80px);
+      animation: pulseOrb 12s ease-in-out infinite alternate;
+    }
+    .ambient-orb-2 {
+      position: absolute;
+      top: 40%;
+      right: -10%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.16) 0%, rgba(5, 150, 105, 0.03) 55%, transparent 70%);
+      filter: blur(85px);
+      animation: pulseOrb2 16s ease-in-out infinite alternate;
+    }
+    .ambient-orb-3 {
+      position: absolute;
+      bottom: 5%;
+      left: -5%;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 65%);
+      filter: blur(90px);
+    }
+
+    @keyframes pulseOrb {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      100% { transform: translate(40px, 30px) scale(1.15); opacity: 1; }
+    }
+    @keyframes pulseOrb2 {
+      0% { transform: translate(0, 0) scale(1.05); }
+      100% { transform: translate(-40px, -20px) scale(0.92); }
+    }
+
+    /* True Physical Frosted Glass (Liquid Glass) */
+    .liquid-glass {
+      position: relative;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), rgba(14, 16, 21, 0.65);
+      backdrop-filter: blur(32px) saturate(210%) brightness(105%);
+      -webkit-backdrop-filter: blur(32px) saturate(210%) brightness(105%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 
-        0 20px 40px -12px rgba(0, 0, 0, 0.6),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-        inset 0 0 16px 0 rgba(255, 255, 255, 0.02);
+        0 24px 48px -12px rgba(0, 0, 0, 0.65),
+        inset 0 1.5px 0.5px 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.4),
+        inset 0 0 24px 0 rgba(255, 255, 255, 0.02);
     }
 
-    .card-glass-subtle {
-      background: rgba(255, 255, 255, 0.035);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    .liquid-glass-subtle {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(18, 20, 27, 0.5);
+      backdrop-filter: blur(20px) saturate(190%);
+      -webkit-backdrop-filter: blur(20px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 
+        0 10px 25px -6px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.2);
     }
 
     /* Spring Physics Tap Animations */
@@ -59,226 +116,237 @@
       transform: scale(0.95);
     }
 
-    /* Primary Glowing Spotify Button */
+    /* Premium Glowing Button */
     .btn-spotify-glow {
-      background: linear-gradient(135deg, #20e365 0%, #1db954 100%);
+      background: linear-gradient(135deg, #22e868 0%, #1db954 100%);
       color: #000000;
       box-shadow: 
-        0 8px 24px -2px rgba(30, 215, 96, 0.45),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+        0 8px 24px -2px rgba(30, 215, 96, 0.5),
+        inset 0 1.5px 0.5px 0 rgba(255, 255, 255, 0.55);
       transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .btn-spotify-glow:hover {
-      filter: brightness(1.05);
+      filter: brightness(1.06);
       box-shadow: 
-        0 10px 28px -2px rgba(30, 215, 96, 0.6),
-        inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+        0 12px 30px -2px rgba(30, 215, 96, 0.65),
+        inset 0 1.5px 0.5px 0 rgba(255, 255, 255, 0.65);
     }
     .btn-spotify-glow:active {
       transform: scale(0.96);
-      filter: brightness(0.95);
     }
 
-    /* Dropzone Active Glow */
     .dropzone-active {
       border-color: #1ed760 !important;
-      background: rgba(30, 215, 96, 0.08) !important;
-      box-shadow: 0 0 35px rgba(30, 215, 96, 0.2) !important;
+      background: rgba(30, 215, 96, 0.1) !important;
+      box-shadow: 0 0 40px rgba(30, 215, 96, 0.25) !important;
     }
 
-    /* Smooth Scrollbar */
+    /* Custom Glass Scrollbar */
     ::-webkit-scrollbar {
       width: 5px;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.18);
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.3);
     }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center p-4 sm:p-8 pb-14">
 
-  <!-- Header -->
-  <header class="text-center max-w-2xl my-6 sm:my-7 flex flex-col items-center">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full card-glass-subtle mb-3.5 border border-white/10 text-[11px] font-semibold text-gray-300">
-      <span class="w-2 h-2 rounded-full bg-[#1ed760] animate-pulse"></span>
-      <span>Spotify 2025 Analytics</span>
-    </div>
+  <!-- Ambient Light Mesh (Powers the Glass Effect) -->
+  <div class="ambient-mesh">
+    <div class="ambient-orb-1"></div>
+    <div class="ambient-orb-2"></div>
+    <div class="ambient-orb-3"></div>
+  </div>
 
-    <div class="inline-flex items-center gap-3 mb-1">
-      <i class="fa-brands fa-spotify text-4xl text-[#1ed760] filter drop-shadow-[0_0_12px_rgba(30,215,96,0.35)]"></i>
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">Spotify Top 500 Radar</h1>
-    </div>
-    <p class="text-gray-400 text-xs sm:text-sm mt-1">Узнай, сколько твоих артистов и песен входят в мировой топ-500 Spotify</p>
-  </header>
+  <!-- Content Layer -->
+  <div class="w-full max-w-2xl relative z-10 flex flex-col items-center">
 
-  <!-- Main Container -->
-  <main class="w-full max-w-2xl">
-
-    <!-- Mode Switcher (Glass Tabs) -->
-    <div class="grid grid-cols-2 gap-1.5 card-glass-subtle p-1.5 rounded-2xl mb-6 border border-white/10 text-xs sm:text-sm">
-      <button id="tabFileBtn" onclick="switchTab('file')" class="spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.12] text-white transition flex items-center justify-center gap-2 border border-white/15 shadow-sm">
-        <i class="fa-solid fa-file-csv text-[#1ed760]"></i> Загрузить файл .csv
-      </button>
-      <button id="tabTextBtn" onclick="switchTab('text')" class="spring-tap py-2.5 font-semibold rounded-xl text-gray-400 hover:text-white transition flex items-center justify-center gap-2 border border-transparent">
-        <i class="fa-solid fa-align-left"></i> Вставить текст
-      </button>
-    </div>
-
-    <!-- Panel 1: File Drop + Glass Guide -->
-    <div id="filePanel" class="card-glass p-5 sm:p-7 rounded-3xl mb-7">
-      
-      <!-- Mini Guide -->
-      <div class="mb-5 p-4 rounded-2xl bg-black/40 border border-white/8">
-        <div class="flex items-center gap-2 mb-3">
-          <i class="fa-solid fa-circle-question text-[#1ed760] text-xs sm:text-sm"></i>
-          <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-300">Как получить файл плейлиста:</h4>
+    <!-- Header -->
+    <header class="text-center my-6 sm:my-8 flex flex-col items-center">
+      <div class="inline-flex items-center gap-3.5 mb-2">
+        <div class="w-12 h-12 rounded-2xl liquid-glass-subtle flex items-center justify-center shadow-lg shadow-[#1ed760]/10">
+          <i class="fa-brands fa-spotify text-3xl text-[#1ed760] filter drop-shadow-[0_0_12px_rgba(30,215,96,0.4)]"></i>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-300">
-          <div class="flex gap-2.5 items-start">
-            <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">1</span>
-            <span>Зайди на <a href="https://exportify.net" target="_blank" class="text-white hover:text-[#1ed760] font-semibold underline underline-offset-2 inline-flex items-center gap-1 transition">exportify.net <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i></a></span>
-          </div>
-          <div class="flex gap-2.5 items-start">
-            <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">2</span>
-            <span>Нажми <b>Get Started</b> и выбери <b>Export</b> плейлиста</span>
-          </div>
-          <div class="flex gap-2.5 items-start">
-            <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">3</span>
-            <span>Скачается <b>.csv</b> — нажми или перетащи сюда</span>
-          </div>
-        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-gray-400">
+          Spotify Top 500 Radar
+        </h1>
       </div>
+      <p class="text-gray-400 text-xs sm:text-sm mt-1 max-w-md leading-relaxed">
+        Узнай, сколько твоих артистов и песен входят в глобальный чарт Топ-500 Spotify
+      </p>
+    </header>
 
-      <!-- Dropzone with Frosted Glass -->
-      <div 
-        id="dropZone" 
-        ondrop="handleFileDrop(event)" 
-        ondragover="handleDragOver(event)" 
-        ondragleave="handleDragLeave(event)"
-        class="spring-tap group border-2 border-dashed border-white/15 hover:border-[#1ed760]/70 transition-all duration-300 rounded-3xl p-7 sm:p-9 text-center cursor-pointer flex flex-col items-center justify-center bg-white/[0.02] hover:bg-white/[0.04]"
-        onclick="triggerHaptic(10); document.getElementById('csvFileInput').click()"
-      >
-        <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
-        
-        <div class="w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center mb-3 text-2xl text-[#1ed760] group-hover:scale-110 transition-transform duration-300 shadow-inner">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-        </div>
-        <h3 class="font-bold text-sm sm:text-base text-white mb-1">Выбери или перетащи .csv файл</h3>
-        <p class="text-xs text-gray-400 mb-3.5">Файл скачанный с Exportify</p>
-        
-        <span class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-xs font-semibold px-4 py-2 rounded-xl border border-white/20 transition text-white shadow-sm">
-          <i class="fa-regular fa-folder-open text-gray-300"></i> Выбрать файл
-        </span>
-      </div>
+    <!-- Main Container -->
+    <main class="w-full">
 
-      <div id="fileInfo" class="hidden mt-4 p-3.5 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-between text-xs backdrop-blur-md">
-        <div class="flex items-center gap-2 truncate max-w-[70%]">
-          <i class="fa-solid fa-file-lines text-[#1ed760]"></i>
-          <span id="fileName" class="text-gray-200 font-medium truncate">playlist.csv</span>
-        </div>
-        <span id="fileCount" class="text-[#1ed760] font-bold bg-[#1ed760]/10 border border-[#1ed760]/25 px-2.5 py-0.5 rounded-full">0 треков</span>
-      </div>
-    </div>
-
-    <!-- Panel 2: Text Input -->
-    <div id="textPanel" class="card-glass p-5 sm:p-7 rounded-3xl mb-7 hidden">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
-        Вставь список треков или артистов:
-      </label>
-      <textarea id="rawArtistsInput" rows="5" placeholder="Rihanna&#10;Metallica&#10;Radiohead&#10;..." class="w-full bg-black/40 border border-white/15 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#1ed760] focus:ring-1 focus:ring-[#1ed760]/40 transition"></textarea>
-      
-      <button onclick="analyzeManualList()" class="btn-spotify-glow w-full mt-3.5 font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer">
-        <i class="fa-solid fa-bolt text-black text-xs"></i> Рассчитать статистику
-      </button>
-    </div>
-
-    <!-- Results Section -->
-    <div id="results" class="hidden space-y-5">
-      
-      <!-- Metrics Glass Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="card-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
-          <div class="text-gray-400 text-[11px] font-medium mb-1">Артистов в Топе</div>
-          <div id="matchedCount" class="text-2xl sm:text-3xl font-black text-[#1ed760]">0</div>
-          <div class="text-[10px] text-gray-500 mt-0.5">из топ-500 мира</div>
-        </div>
-        
-        <div class="card-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
-          <div class="text-gray-400 text-[11px] font-medium mb-1">Песен топ-артистов</div>
-          <div id="topTracksStats" class="text-2xl sm:text-3xl font-black text-white">0</div>
-          <div id="topTracksSub" class="text-[10px] text-gray-500 mt-0.5">0% плейлиста</div>
-        </div>
-        
-        <div class="card-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
-          <div class="text-gray-400 text-[11px] font-medium mb-1">Самый популярный</div>
-          <div id="highestRank" class="text-lg sm:text-xl font-bold text-[#1ed760] truncate">#—</div>
-          <div id="highestName" class="text-[10px] text-gray-300 truncate mt-0.5 font-medium">—</div>
-        </div>
-        
-        <div class="card-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
-          <div class="text-gray-400 text-[11px] font-medium mb-1">Андеграунд</div>
-          <div id="indieCount" class="text-2xl sm:text-3xl font-black text-purple-400">0</div>
-          <div class="text-[10px] text-gray-500 mt-0.5">артистов вне топа</div>
-        </div>
-      </div>
-
-      <!-- Verdict + Share Glass Card -->
-      <div id="verdictBox" class="card-glass p-5 sm:p-6 rounded-3xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div id="verdictEmoji" class="text-4xl sm:text-5xl shrink-0 filter drop-shadow-md">🎧</div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 id="verdictTitle" class="font-extrabold text-base sm:text-lg text-white">Вердикт</h3>
-              <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#1ed760]/15 text-[#1ed760] border border-[#1ed760]/30">radar ai</span>
-            </div>
-            <p id="verdictDesc" class="text-xs sm:text-sm text-gray-300 mt-1 leading-relaxed">...</p>
-          </div>
-        </div>
-        <button onclick="shareResult()" class="spring-tap shrink-0 w-full sm:w-auto bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
-          <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Поделиться
+      <!-- Mode Switcher (True Glass Segmented Control) -->
+      <div class="grid grid-cols-2 gap-1.5 liquid-glass-subtle p-1.5 rounded-2xl mb-6 text-xs sm:text-sm shadow-md">
+        <button id="tabFileBtn" onclick="switchTab('file')" class="spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.14] text-white transition flex items-center justify-center gap-2 border border-white/20 shadow-sm">
+          <i class="fa-solid fa-file-csv text-[#1ed760]"></i> Загрузить файл .csv
+        </button>
+        <button id="tabTextBtn" onclick="switchTab('text')" class="spring-tap py-2.5 font-semibold rounded-xl text-gray-400 hover:text-white transition flex items-center justify-center gap-2 border border-transparent">
+          <i class="fa-solid fa-align-left"></i> Вставить текст
         </button>
       </div>
 
-      <!-- Matched Top Artists Panel -->
-      <div class="card-glass p-5 sm:p-6 rounded-3xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="font-bold text-sm sm:text-base text-white">Твои артисты из мирового Топ-500</h3>
-              <span id="matchedBadge" class="text-xs bg-[#1ed760]/15 text-[#1ed760] border border-[#1ed760]/30 font-bold px-2.5 py-0.5 rounded-full">0</span>
+      <!-- Panel 1: File Drop + Glass Guide -->
+      <div id="filePanel" class="liquid-glass p-6 sm:p-7 rounded-3xl mb-7">
+        
+        <!-- Mini Guide -->
+        <div class="mb-5 p-4 rounded-2xl bg-black/40 border border-white/8 backdrop-blur-md">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-circle-question text-[#1ed760] text-xs sm:text-sm"></i>
+            <h4 class="text-[11px] font-bold uppercase tracking-wider text-gray-300">Как получить файл плейлиста:</h4>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-300">
+            <div class="flex gap-2.5 items-start">
+              <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">1</span>
+              <span>Зайди на <a href="https://exportify.net" target="_blank" class="text-white hover:text-[#1ed760] font-semibold underline underline-offset-2 inline-flex items-center gap-1 transition">exportify.net <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i></a></span>
             </div>
-            <p class="text-xs text-gray-400 mt-1">💡 <b>Нажми на артиста</b>, чтобы открыть треки:</p>
-          </div>
-          <div class="relative w-full sm:w-48 shrink-0">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-            <input type="text" id="searchMatchedInput" oninput="filterMatchedArtists()" placeholder="Поиск в топе..." class="w-full bg-black/40 border border-white/15 focus:border-[#1ed760] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
-          </div>
-        </div>
-        <div id="matchedList" class="flex flex-wrap gap-2 max-h-80 overflow-y-auto pr-1 mt-2"></div>
-      </div>
-
-      <!-- Indie Artists Panel -->
-      <div class="card-glass p-5 sm:p-6 rounded-3xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-          <div class="flex items-center gap-2">
-            <h3 class="font-bold text-sm sm:text-base text-white">Андеграунд (нет в мировом топ-500)</h3>
-            <span id="indieBadge" class="text-xs bg-purple-500/15 text-purple-300 border border-purple-500/30 font-bold px-2.5 py-0.5 rounded-full">0</span>
-          </div>
-          <div class="relative w-full sm:w-48 shrink-0">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-            <input type="text" id="searchIndieInput" oninput="filterIndieArtists()" placeholder="Поиск в инди..." class="w-full bg-black/40 border border-white/15 focus:border-purple-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
+            <div class="flex gap-2.5 items-start">
+              <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">2</span>
+              <span>Нажми <b>Get Started</b> и выбери <b>Export</b> плейлиста</span>
+            </div>
+            <div class="flex gap-2.5 items-start">
+              <span class="w-5 h-5 rounded-full bg-white/10 text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[10px] border border-white/15">3</span>
+              <span>Скачается <b>.csv</b> — нажми или перетащи сюда</span>
+            </div>
           </div>
         </div>
-        <div id="indieList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1 mt-2"></div>
+
+        <!-- Dropzone with Tactile Glass Depth -->
+        <div 
+          id="dropZone" 
+          ondrop="handleFileDrop(event)" 
+          ondragover="handleDragOver(event)" 
+          ondragleave="handleDragLeave(event)"
+          class="spring-tap group border-2 border-dashed border-white/15 hover:border-[#1ed760]/70 transition-all duration-300 rounded-3xl p-7 sm:p-9 text-center cursor-pointer flex flex-col items-center justify-center bg-white/[0.02] hover:bg-white/[0.04]"
+          onclick="triggerHaptic(10); document.getElementById('csvFileInput').click()"
+        >
+          <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
+          
+          <div class="w-14 h-14 rounded-2xl bg-white/[0.06] border border-white/15 flex items-center justify-center mb-3 text-2xl text-[#1ed760] group-hover:scale-110 transition-transform duration-300 shadow-inner">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h3 class="font-bold text-sm sm:text-base text-white mb-1">Выбери или перетащи .csv файл</h3>
+          <p class="text-xs text-gray-400 mb-3.5">Файл скачанный с Exportify</p>
+          
+          <span class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-xs font-semibold px-4 py-2 rounded-xl border border-white/20 transition text-white shadow-sm">
+            <i class="fa-regular fa-folder-open text-gray-300"></i> Выбрать файл
+          </span>
+        </div>
+
+        <div id="fileInfo" class="hidden mt-4 p-3.5 rounded-2xl bg-white/[0.06] border border-white/15 flex items-center justify-between text-xs backdrop-blur-md">
+          <div class="flex items-center gap-2 truncate max-w-[70%]">
+            <i class="fa-solid fa-file-lines text-[#1ed760]"></i>
+            <span id="fileName" class="text-gray-200 font-medium truncate">playlist.csv</span>
+          </div>
+          <span id="fileCount" class="text-[#1ed760] font-bold bg-[#1ed760]/10 border border-[#1ed760]/25 px-2.5 py-0.5 rounded-full">0 треков</span>
+        </div>
       </div>
 
-    </div>
+      <!-- Panel 2: Text Input -->
+      <div id="textPanel" class="liquid-glass p-6 sm:p-7 rounded-3xl mb-7 hidden">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-300 mb-2">
+          Вставь список треков или артистов:
+        </label>
+        <textarea id="rawArtistsInput" rows="5" placeholder="Rihanna&#10;Metallica&#10;Radiohead&#10;..." class="w-full bg-black/40 border border-white/15 rounded-2xl p-3.5 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#1ed760] focus:ring-1 focus:ring-[#1ed760]/40 transition"></textarea>
+        
+        <button onclick="analyzeManualList()" class="btn-spotify-glow w-full mt-3.5 font-extrabold py-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-bolt text-black text-xs"></i> Рассчитать статистику
+        </button>
+      </div>
 
-  </main>
+      <!-- Results Section -->
+      <div id="results" class="hidden space-y-5">
+        
+        <!-- Metrics Glass Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="liquid-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
+            <div class="text-gray-400 text-[11px] font-medium mb-1">Артистов в Топе</div>
+            <div id="matchedCount" class="text-2xl sm:text-3xl font-black text-[#1ed760]">0</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">из топ-500 мира</div>
+          </div>
+          
+          <div class="liquid-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
+            <div class="text-gray-400 text-[11px] font-medium mb-1">Песен топ-артистов</div>
+            <div id="topTracksStats" class="text-2xl sm:text-3xl font-black text-white">0</div>
+            <div id="topTracksSub" class="text-[10px] text-gray-500 mt-0.5">0% плейлиста</div>
+          </div>
+          
+          <div class="liquid-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
+            <div class="text-gray-400 text-[11px] font-medium mb-1">Самый популярный</div>
+            <div id="highestRank" class="text-lg sm:text-xl font-bold text-[#1ed760] truncate">#—</div>
+            <div id="highestName" class="text-[10px] text-gray-300 truncate mt-0.5 font-medium">—</div>
+          </div>
+          
+          <div class="liquid-glass-subtle spring-tap p-4 rounded-2xl text-center flex flex-col justify-center">
+            <div class="text-gray-400 text-[11px] font-medium mb-1">Андеграунд</div>
+            <div id="indieCount" class="text-2xl sm:text-3xl font-black text-purple-400">0</div>
+            <div class="text-[10px] text-gray-500 mt-0.5">артистов вне топа</div>
+          </div>
+        </div>
+
+        <!-- Verdict + Share Glass Card -->
+        <div id="verdictBox" class="liquid-glass p-5 sm:p-6 rounded-3xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div id="verdictEmoji" class="text-4xl sm:text-5xl shrink-0 filter drop-shadow-md">🎧</div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 id="verdictTitle" class="font-extrabold text-base sm:text-lg text-white">Вердикт</h3>
+                <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-md bg-[#1ed760]/15 text-[#1ed760] border border-[#1ed760]/30">radar ai</span>
+              </div>
+              <p id="verdictDesc" class="text-xs sm:text-sm text-gray-300 mt-1 leading-relaxed">...</p>
+            </div>
+          </div>
+          <button onclick="shareResult()" class="spring-tap shrink-0 w-full sm:w-auto bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs font-bold px-4 py-2.5 rounded-2xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+            <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Поделиться
+          </button>
+        </div>
+
+        <!-- Matched Top Artists Panel -->
+        <div class="liquid-glass p-5 sm:p-6 rounded-3xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-bold text-sm sm:text-base text-white">Твои артисты из мирового Топ-500</h3>
+                <span id="matchedBadge" class="text-xs bg-[#1ed760]/15 text-[#1ed760] border border-[#1ed760]/30 font-bold px-2.5 py-0.5 rounded-full">0</span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">💡 <b>Нажми на артиста</b>, чтобы открыть треки:</p>
+            </div>
+            <div class="relative w-full sm:w-48 shrink-0">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+              <input type="text" id="searchMatchedInput" oninput="filterMatchedArtists()" placeholder="Поиск в топе..." class="w-full bg-black/40 border border-white/15 focus:border-[#1ed760] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
+            </div>
+          </div>
+          <div id="matchedList" class="flex flex-wrap gap-2 max-h-80 overflow-y-auto pr-1 mt-2"></div>
+        </div>
+
+        <!-- Indie Artists Panel -->
+        <div class="liquid-glass p-5 sm:p-6 rounded-3xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-sm sm:text-base text-white">Андеграунд (нет в мировом топ-500)</h3>
+              <span id="indieBadge" class="text-xs bg-purple-500/15 text-purple-300 border border-purple-500/30 font-bold px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+            <div class="relative w-full sm:w-48 shrink-0">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+              <input type="text" id="searchIndieInput" oninput="filterIndieArtists()" placeholder="Поиск в инди..." class="w-full bg-black/40 border border-white/15 focus:border-purple-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
+            </div>
+          </div>
+          <div id="indieList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1 mt-2"></div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
 
   <!-- Glass Toast Notification -->
   <div id="toast" class="fixed bottom-6 bg-black/80 backdrop-blur-2xl border border-white/20 text-white font-semibold text-xs px-5 py-3 rounded-full shadow-2xl transition-all duration-300 transform translate-y-12 opacity-0 pointer-events-none z-50 flex items-center gap-2.5">
@@ -288,10 +356,10 @@
 
   <!-- Spotify-style Spring Bottom Sheet (Drawer) -->
   <div id="artistModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300">
-    <div id="modalSheet" class="card-glass bg-[#121318]/95 border-t sm:border border-white/15 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 relative max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl transform transition-transform duration-300 translate-y-full sm:translate-y-0">
+    <div id="modalSheet" class="liquid-glass bg-[#101217]/95 border-t sm:border border-white/15 w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 relative max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl transform transition-transform duration-300 translate-y-full sm:translate-y-0">
       
       <!-- Drag Handle for Mobile -->
-      <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-3.5 sm:hidden"></div>
+      <div class="w-12 h-1 bg-white/25 rounded-full mx-auto mb-3.5 sm:hidden"></div>
 
       <button onclick="closeModal()" class="spring-tap absolute top-4 sm:top-5 right-4 sm:right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-gray-300 hover:text-white flex items-center justify-center text-sm transition cursor-pointer">
         <i class="fa-solid fa-xmark"></i>
@@ -404,12 +472,12 @@
       if (mode === 'file') {
         fPanel.classList.remove('hidden');
         tPanel.classList.add('hidden');
-        fBtn.className = "spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.12] text-white transition flex items-center justify-center gap-2 border border-white/15 shadow-sm";
+        fBtn.className = "spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.14] text-white transition flex items-center justify-center gap-2 border border-white/20 shadow-sm";
         tBtn.className = "spring-tap py-2.5 font-semibold rounded-xl text-gray-400 hover:text-white transition flex items-center justify-center gap-2 border border-transparent";
       } else {
         tPanel.classList.remove('hidden');
         fPanel.classList.add('hidden');
-        tBtn.className = "spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.12] text-white transition flex items-center justify-center gap-2 border border-white/15 shadow-sm";
+        tBtn.className = "spring-tap py-2.5 font-semibold rounded-xl bg-white/[0.14] text-white transition flex items-center justify-center gap-2 border border-white/20 shadow-sm";
         fBtn.className = "spring-tap py-2.5 font-semibold rounded-xl text-gray-400 hover:text-white transition flex items-center justify-center gap-2 border border-transparent";
       }
     }
@@ -609,7 +677,7 @@
     function renderMatchedList(list) {
       const matchedContainer = document.getElementById('matchedList');
       matchedContainer.innerHTML = list.map(a => `
-        <button onclick="openArtistModal('${escapeHtml(a.name)}', true)" class="group spring-tap flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[#1ed760]/60 px-3.5 py-2 rounded-2xl text-xs transition text-left cursor-pointer shadow-sm">
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', true)" class="group spring-tap flex items-center gap-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 hover:border-[#1ed760]/60 px-3.5 py-2 rounded-2xl text-xs transition text-left cursor-pointer shadow-sm">
           <span class="text-gray-400 group-hover:text-[#1ed760] font-bold">#${a.rank}</span>
           <span class="font-semibold text-white">${a.name}</span>
           <span class="bg-[#1ed760]/15 text-[#1ed760] border border-[#1ed760]/30 font-bold px-2 py-0.5 rounded-full text-[10px] ml-1">
@@ -624,7 +692,7 @@
     function renderIndieList(list) {
       const indieContainer = document.getElementById('indieList');
       indieContainer.innerHTML = list.map(a => `
-        <button onclick="openArtistModal('${escapeHtml(a.name)}', false)" class="spring-tap flex items-center gap-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/8 hover:border-purple-400/50 px-3 py-1.5 rounded-xl text-xs text-gray-300 transition text-left cursor-pointer shadow-sm">
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', false)" class="spring-tap flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.09] border border-white/8 hover:border-purple-400/50 px-3 py-1.5 rounded-xl text-xs text-gray-300 transition text-left cursor-pointer shadow-sm">
           <span class="truncate max-w-[150px]">${a.name}</span>
           ${a.tracks.length > 1 ? `<span class="text-purple-300 bg-purple-500/20 border border-purple-500/30 px-1.5 py-0.2 rounded-md text-[10px] font-bold">${a.tracks.length}</span>` : ''}
         </button>
@@ -716,7 +784,7 @@
         const meta = [t.album, t.year].filter(Boolean).join(' • ');
 
         return `
-          <div class="spring-tap flex items-center justify-between p-3.5 bg-white/[0.04] hover:bg-white/[0.07] active:bg-white/[0.1] border border-white/8 rounded-2xl text-xs transition">
+          <div class="spring-tap flex items-center justify-between p-3.5 bg-white/[0.04] hover:bg-white/[0.08] active:bg-white/[0.12] border border-white/8 rounded-2xl text-xs transition">
             <div class="truncate mr-3">
               <div class="font-semibold text-white truncate">${t.title}</div>
               ${meta ? `<div class="text-gray-400 text-[11px] truncate mt-0.5">${meta}</div>` : ''}
