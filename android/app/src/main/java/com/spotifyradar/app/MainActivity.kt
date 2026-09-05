@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -166,7 +167,7 @@ fun SpotifyRadarApp() {
                 ) {
                     TabButton(
                         title = "Файл .CSV",
-                        icon = Icons.Default.UploadFile,
+                        icon = Icons.Default.Add,
                         isSelected = selectedTab == 0,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -196,12 +197,7 @@ fun SpotifyRadarApp() {
                             .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CloudUpload,
-                            contentDescription = null,
-                            tint = SpotifyGreen,
-                            modifier = Modifier.size(44.dp)
-                        )
+                        Text("📁", fontSize = 40.sp)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "Загрузи .csv из Exportify",
@@ -229,7 +225,7 @@ fun SpotifyRadarApp() {
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Icon(Icons.Default.FolderOpen, contentDescription = null, tint = Color.Black)
+                                Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("Выбрать файл", color = Color.Black, fontWeight = FontWeight.Bold)
                             }
@@ -254,7 +250,7 @@ fun SpotifyRadarApp() {
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                                border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(SpotifyBorder))
+                                border = BorderStroke(1.dp, SpotifyBorder)
                             ) {
                                 Text("Демо")
                             }
@@ -448,7 +444,7 @@ fun SpotifyRadarApp() {
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = Color.Black)
+                            Icon(Icons.Default.Star, contentDescription = null, tint = Color.Black)
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Stories карточка", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
@@ -735,7 +731,7 @@ fun SpotifyRadarApp() {
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Download, contentDescription = null, tint = Color.Black)
+                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("В галерею", color = Color.Black, fontWeight = FontWeight.Bold)
                     }

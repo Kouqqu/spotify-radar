@@ -1,4 +1,4 @@
-﻿package com.spotifyradar.app
+package com.spotifyradar.app
 
 import java.text.Normalizer
 
@@ -520,8 +520,8 @@ object KworbData {
 
     fun clean(str: String): String {
         val normalized = Normalizer.normalize(str.lowercase(), Normalizer.Form.NFD)
-        return normalized.replace(Regex("[\p{InCombiningDiacriticalMarks}]"), "")
-            .replace(Regex("[^a-z0-9а-яё]"), "").trim()
+        return normalized.replace(Regex("""\p{M}"""), "")
+            .replace(Regex("""[^a-z0-9а-яё]"""), "").trim()
     }
 }
 
