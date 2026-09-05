@@ -16,7 +16,6 @@
       box-sizing: border-box;
     }
     
-    /* 120Hz Ultra Smooth Scrolling & Pure Native Spotify Dark */
     body {
       background-color: #121212;
       color: #ffffff;
@@ -26,7 +25,6 @@
       overflow-x: hidden;
     }
 
-    /* Spotify Authentic Clean Surfaces (No heavy GPU blur lag) */
     .sp-card {
       background-color: #181818;
       border: 1px solid #282828;
@@ -42,7 +40,6 @@
       border: 1px solid #222222;
     }
 
-    /* Tactile Press Effect */
     .sp-btn-press {
       transition: transform 0.15s ease, opacity 0.15s ease;
     }
@@ -51,7 +48,6 @@
       opacity: 0.88;
     }
 
-    /* Spotify Green Brand Button */
     .sp-btn-green {
       background-color: #1ed760;
       color: #000000;
@@ -65,7 +61,6 @@
       transform: scale(0.97);
     }
 
-    /* Dropzone Active */
     .dropzone-active {
       border-color: #1ed760 !important;
       background-color: rgba(30, 215, 96, 0.06) !important;
@@ -74,22 +69,22 @@
 </head>
 <body class="flex flex-col items-center p-4 sm:p-8 pb-16">
 
-  <!-- Content Layer -->
+  <!-- Content Container -->
   <div class="w-full max-w-xl flex flex-col items-center">
 
     <!-- Web Banner for APK download (Auto-hidden in native app) -->
     <div id="webDownloadBanner" class="w-full mb-4 p-3 rounded-2xl sp-card-subtle flex items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2.5">
         <i class="fa-brands fa-android text-[#1ed760] text-lg"></i>
-        <span class="text-gray-300">Установи официальный Android .apk</span>
+        <span class="text-gray-300">Официальное Android-приложение</span>
       </div>
       <a href="https://github.com/SaaaNek/spotify-radar/releases" target="_blank" class="sp-btn-press bg-[#1ed760] text-black font-bold px-3 py-1.5 rounded-full transition text-[11px]">
-        Скачать
+        Скачать .apk
       </a>
     </div>
 
     <!-- Header -->
-    <header class="text-center my-5 sm:my-7 flex flex-col items-center">
+    <header class="text-center my-4 sm:my-6 flex flex-col items-center">
       <div class="flex items-center gap-3 mb-1">
         <i class="fa-brands fa-spotify text-4xl text-[#1ed760]"></i>
         <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Top 500 Radar</h1>
@@ -238,7 +233,7 @@
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3">
             <div class="flex items-center gap-2">
               <h3 class="font-bold text-sm text-white">Андеграунд (нет в топе)</h3>
-              <span id="indieBadge" class="text-xs bg-purple-500/15 text-purple-300 font-bold px-2 py-0.5 rounded-full">0</span>
+              <span id="indieBadge" class="text-xs bg-purple-500/15 text-purple-300 font-bold px-2.5 py-0.5 rounded-full">0</span>
             </div>
             <div class="relative w-full sm:w-44 shrink-0">
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
@@ -254,7 +249,7 @@
 
   </div>
 
-  <!-- Share Action Dialog (100% works in any browser and app) -->
+  <!-- Share Action Dialog -->
   <div id="shareModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-[#181818] border border-[#282828] w-full max-w-sm rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
       <div class="flex items-center justify-between">
@@ -263,26 +258,29 @@
       </div>
       <p class="text-xs text-gray-400">Выбери, куда отправить:</p>
 
-      <div class="grid grid-cols-2 gap-2 mt-1">
-        <button onclick="shareToTelegram()" class="sp-btn-press bg-[#229ED9]/15 hover:bg-[#229ED9]/25 text-[#229ED9] border border-[#229ED9]/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2">
-          <i class="fa-brands fa-telegram text-base"></i> Telegram
+      <div class="grid grid-cols-3 gap-2 mt-1">
+        <button onclick="shareToTelegram()" class="sp-btn-press bg-[#229ED9]/15 hover:bg-[#229ED9]/25 text-[#229ED9] border border-[#229ED9]/30 font-bold py-2.5 px-2 rounded-xl text-xs flex flex-col items-center justify-center gap-1">
+          <i class="fa-brands fa-telegram text-lg"></i> Telegram
         </button>
-        <button onclick="shareToWhatsApp()" class="sp-btn-press bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] border border-[#25D366]/30 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2">
-          <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp
+        <button onclick="shareToWhatsApp()" class="sp-btn-press bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] border border-[#25D366]/30 font-bold py-2.5 px-2 rounded-xl text-xs flex flex-col items-center justify-center gap-1">
+          <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp
+        </button>
+        <button onclick="shareToVK()" class="sp-btn-press bg-[#0077FF]/15 hover:bg-[#0077FF]/25 text-[#0077FF] border border-[#0077FF]/30 font-bold py-2.5 px-2 rounded-xl text-xs flex flex-col items-center justify-center gap-1">
+          <i class="fa-brands fa-vk text-lg"></i> VK
         </button>
       </div>
 
-      <button onclick="shareViaSystem()" class="sp-btn-press bg-[#242424] hover:bg-[#2e2e2e] text-white border border-[#333] font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 mt-1">
-        <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Системное меню Android
+      <button id="systemShareBtn" onclick="shareViaSystem()" class="sp-btn-press bg-[#242424] hover:bg-[#2e2e2e] text-white border border-[#333] font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 mt-1 hidden">
+        <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Другие приложения на телефоне...
       </button>
 
-      <button onclick="copyShareText()" class="sp-btn-press bg-[#1c1c1c] hover:bg-[#242424] text-gray-300 font-medium py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2">
+      <button onclick="copyShareText()" class="sp-btn-press bg-[#1c1c1c] hover:bg-[#242424] text-gray-300 font-medium py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2">
         <i class="fa-regular fa-copy"></i> Скопировать текст
       </button>
     </div>
   </div>
 
-  <!-- Stories Card Visual Modal (Image Preview on Screen!) -->
+  <!-- Stories Card Visual Modal -->
   <div id="storyModal" class="fixed inset-0 bg-black/90 z-50 hidden flex flex-col items-center justify-center p-4 overflow-y-auto">
     <div class="relative max-w-sm w-full flex flex-col items-center">
       <button onclick="closeStoryModal()" class="absolute -top-10 right-0 text-gray-400 hover:text-white text-xl p-2">✕</button>
@@ -386,7 +384,6 @@
     let rawIndieList = [];
     let currentStoryBlob = null;
 
-    // Скрыть баннер если в APK
     (function checkAppEnvironment() {
       const isApp = !!(window.Capacitor?.isNativePlatform() || 
                        window.matchMedia('(display-mode: standalone)').matches ||
@@ -660,7 +657,6 @@
       renderIndieList(filtered);
     }
 
-    // Текст для шеринга
     function getShareSummaryText() {
       const matchedCount = document.getElementById('matchedCount').innerText;
       const percentStr = document.getElementById('topTracksSub').innerText;
@@ -677,9 +673,17 @@
         `Проверь свой плейлист: https://saaanek.github.io/spotify-radar/`;
     }
 
-    // Открытие диалога "Поделиться"
     function openShareModal() {
       triggerHaptic(15);
+      const sysBtn = document.getElementById('systemShareBtn');
+      // Показываем кнопку "Другие приложения" ТОЛЬКО на мобильных устройствах с поддержкой share
+      if (sysBtn) {
+        if (navigator.share && /android|iphone|ipad|mobile/i.test(navigator.userAgent)) {
+          sysBtn.classList.remove('hidden');
+        } else {
+          sysBtn.classList.add('hidden');
+        }
+      }
       document.getElementById('shareModal').classList.remove('hidden');
     }
 
@@ -690,7 +694,9 @@
     function shareToTelegram() {
       triggerHaptic(15);
       const text = encodeURIComponent(getShareSummaryText());
-      window.open(`https://t.me/share/url?url=&text=${text}`, '_blank');
+      const siteUrl = encodeURIComponent('https://saaanek.github.io/spotify-radar/');
+      // Передаем валидный URL и текст, чтобы открывался именно диалог пересылки Telegram
+      window.open(`https://t.me/share/url?url=${siteUrl}&text=${text}`, '_blank');
       closeShareModal();
     }
 
@@ -701,6 +707,14 @@
       closeShareModal();
     }
 
+    function shareToVK() {
+      triggerHaptic(15);
+      const text = encodeURIComponent(getShareSummaryText());
+      const siteUrl = encodeURIComponent('https://saaanek.github.io/spotify-radar/');
+      window.open(`https://vk.com/share.php?url=${siteUrl}&title=${text}`, '_blank');
+      closeShareModal();
+    }
+
     async function shareViaSystem() {
       triggerHaptic(20);
       closeShareModal();
@@ -708,7 +722,8 @@
         try {
           await navigator.share({
             title: 'Spotify Top 500 Radar',
-            text: getShareSummaryText()
+            text: getShareSummaryText(),
+            url: 'https://saaanek.github.io/spotify-radar/'
           });
         } catch (e) {}
       } else {
@@ -732,23 +747,23 @@
       closeShareModal();
     }
 
-    // Генерация Stories-карточки с отображением на экране!
+    // Генерация Stories-карточки без обрезания имен и с выводом на экран
     function generateStoryCard() {
       triggerHaptic(25);
       if (!currentAnalysisData.matched) return;
 
-      showToast('Генерирую картинку...');
+      showToast('Генерирую карточку...');
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = 1080;
       canvas.height = 1920;
 
-      // Фон Spotify
+      // Фон
       ctx.fillStyle = '#121212';
       ctx.fillRect(0, 0, 1080, 1920);
 
-      // Акцентный зеленый градиент сверху
+      // Зеленый градиент
       const grad = ctx.createRadialGradient(540, 200, 50, 540, 200, 650);
       grad.addColorStop(0, 'rgba(30, 215, 96, 0.35)');
       grad.addColorStop(1, 'rgba(18, 18, 18, 0)');
@@ -822,9 +837,22 @@
         ctx.textAlign = 'left';
         ctx.fillText(`#${artist.rank}`, 160, yPos + 56);
 
+        // Аккуратный подбор размера шрифта без обрезки букв
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 32px -apple-system, sans-serif';
-        ctx.fillText(artist.name.substring(0, 22), 260, yPos + 56);
+        let nameFont = 32;
+        ctx.font = `bold ${nameFont}px -apple-system, sans-serif`;
+        let displayName = artist.name;
+        while (ctx.measureText(displayName).width > 460 && nameFont > 22) {
+          nameFont -= 1;
+          ctx.font = `bold ${nameFont}px -apple-system, sans-serif`;
+        }
+        if (ctx.measureText(displayName).width > 460) {
+          while (ctx.measureText(displayName + '…').width > 460 && displayName.length > 0) {
+            displayName = displayName.slice(0, -1);
+          }
+          displayName += '…';
+        }
+        ctx.fillText(displayName, 260, yPos + 56);
 
         ctx.fillStyle = '#1ed760';
         ctx.font = 'bold 26px -apple-system, sans-serif';
@@ -840,7 +868,7 @@
       ctx.textAlign = 'center';
       ctx.fillText('Spotify Top 500 Radar • saaanek.github.io/spotify-radar', 540, 1720);
 
-      // Получаем DataURL синхронно без сбоев
+      // Синхронный экспорт картинки
       const dataUrl = canvas.toDataURL('image/png');
       document.getElementById('storyPreviewImg').src = dataUrl;
       document.getElementById('downloadStoryBtn').href = dataUrl;
@@ -886,6 +914,7 @@
       ctx.closePath();
     }
 
+    // Отрисовка блока со статистикой без обрезания букв имени артиста
     function drawStatBlock(ctx, x, y, w, h, label, val, valColor, subLabel) {
       ctx.fillStyle = '#202020';
       ctx.strokeStyle = '#2e2e2e';
@@ -899,13 +928,26 @@
       ctx.fillText(label, x + w / 2, y + 45);
 
       ctx.fillStyle = valColor;
-      ctx.font = 'bold 50px -apple-system, sans-serif';
-      ctx.fillText(val, x + w / 2, y + 110);
+      ctx.font = 'bold 48px -apple-system, sans-serif';
+      ctx.fillText(val, x + w / 2, y + 105);
 
       if (subLabel) {
-        ctx.fillStyle = '#aaaaaa';
-        ctx.font = '22px -apple-system, sans-serif';
-        ctx.fillText(subLabel.substring(0, 12), x + w / 2, y + 150);
+        ctx.fillStyle = '#cccccc';
+        let fontSize = 20;
+        ctx.font = `${fontSize}px -apple-system, sans-serif`;
+        // Динамически уменьшаем шрифт, чтобы длинное имя полностью влезло целиком
+        while (ctx.measureText(subLabel).width > w - 24 && fontSize > 13) {
+          fontSize -= 1;
+          ctx.font = `${fontSize}px -apple-system, sans-serif`;
+        }
+        let finalText = subLabel;
+        if (ctx.measureText(finalText).width > w - 20) {
+          while (ctx.measureText(finalText + '…').width > w - 20 && finalText.length > 0) {
+            finalText = finalText.slice(0, -1);
+          }
+          finalText += '…';
+        }
+        ctx.fillText(finalText, x + w / 2, y + 148);
       }
     }
 
