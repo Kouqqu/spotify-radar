@@ -36,9 +36,17 @@ jobs:
           cd android
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleDebug --stacktrace --no-daemon > gradle_build.log 2>&1 || (echo "=== GRADLE LOG START ===" && tail -n 120 gradle_build.log && echo "=== GRADLE LOG END ===" && exit 1)
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-log
+          path: android/gradle_build.log
 
       - name: Upload APK as Artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: SpotifyRadar-Native-APK
@@ -46,6 +54,7 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub Release
+        if: success()
         continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
