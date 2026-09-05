@@ -1,0 +1,11 @@
+{
+  "name": "spotify-radar",
+  "version": "1.0.0",
+  "description": "Spotify Top 500 Radar",
+  "main": "index.html",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}

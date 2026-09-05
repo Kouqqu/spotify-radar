@@ -2,13 +2,30 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0c0d0e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Spotify Top 500 Radar</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎧</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #0c0d0e; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    body {
+      background-color: #0c0d0e;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      overscroll-behavior-y: contain;
+    }
     .spotify-green { color: #1ed760; }
     .bg-spotify { background-color: #1ed760; }
     .bg-spotify:hover { background-color: #1fdf64; }
@@ -16,51 +33,51 @@
     .dropzone-active { border-color: #1ed760 !important; background-color: rgba(30, 215, 96, 0.05) !important; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8 pb-10">
 
   <!-- Header -->
-  <header class="text-center max-w-2xl my-6">
+  <header class="text-center max-w-2xl my-5 sm:my-6">
     <div class="inline-flex items-center gap-3 mb-1">
-      <i class="fa-brands fa-spotify text-4xl text-[#1ed760]"></i>
-      <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Spotify Top 500 Radar</h1>
+      <i class="fa-brands fa-spotify text-3xl sm:text-4xl text-[#1ed760]"></i>
+      <h1 class="text-2xl sm:text-4xl font-black tracking-tight">Spotify Top 500 Radar</h1>
     </div>
-    <p class="text-gray-400 text-sm">Узнай, сколько твоих артистов и песен входят в мировой топ-500 Spotify</p>
+    <p class="text-gray-400 text-xs sm:text-sm">Узнай, сколько твоих артистов и песен входят в мировой топ-500 Spotify</p>
   </header>
 
   <!-- Main Container -->
   <main class="w-full max-w-2xl">
 
     <!-- Mode Switcher -->
-    <div class="grid grid-cols-2 gap-1 bg-[#181818] p-1 rounded-xl mb-6 border border-[#282828] text-sm">
-      <button id="tabFileBtn" onclick="switchTab('file')" class="py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2">
+    <div class="grid grid-cols-2 gap-1 bg-[#181818] p-1 rounded-xl mb-5 border border-[#282828] text-xs sm:text-sm">
+      <button id="tabFileBtn" onclick="switchTab('file')" class="py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2 active:scale-[0.98]">
         <i class="fa-solid fa-file-csv text-[#1ed760]"></i> Загрузить файл .csv
       </button>
-      <button id="tabTextBtn" onclick="switchTab('text')" class="py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2">
+      <button id="tabTextBtn" onclick="switchTab('text')" class="py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2 active:scale-[0.98]">
         <i class="fa-solid fa-align-left"></i> Вставить текст
       </button>
     </div>
 
     <!-- Panel 1: File Drop + Guide -->
-    <div id="filePanel" class="card-glass p-6 rounded-2xl mb-8">
+    <div id="filePanel" class="card-glass p-5 sm:p-6 rounded-2xl mb-7">
       
       <!-- Mini Guide -->
-      <div class="mb-5 p-4 rounded-xl bg-[#141414] border border-[#242424]">
-        <div class="flex items-center gap-2 mb-3">
-          <i class="fa-solid fa-circle-question text-[#1ed760] text-sm"></i>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-300">Как получить файл:</h4>
+      <div class="mb-5 p-3.5 sm:p-4 rounded-xl bg-[#141414] border border-[#242424]">
+        <div class="flex items-center gap-2 mb-2.5">
+          <i class="fa-solid fa-circle-question text-[#1ed760] text-xs sm:text-sm"></i>
+          <h4 class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-gray-300">Как получить файл:</h4>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-400">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-gray-400">
           <div class="flex gap-2.5 items-start">
             <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">1</span>
             <span>Зайди на <a href="https://exportify.net" target="_blank" class="text-white hover:text-[#1ed760] font-semibold underline inline-flex items-center gap-1 transition">exportify.net <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></span>
           </div>
           <div class="flex gap-2.5 items-start">
             <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">2</span>
-            <span>Нажми <b>Get Started</b> и выбери <b>Export</b> у плейлиста или <i>Liked Songs</i></span>
+            <span>Нажми <b>Get Started</b> и выбери <b>Export</b> плейлиста</span>
           </div>
           <div class="flex gap-2.5 items-start">
             <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">3</span>
-            <span>Скачается файл <b>.csv</b> — перетащи его в рамку ниже</span>
+            <span>Скачается файл <b>.csv</b> — нажми в рамку ниже</span>
           </div>
         </div>
       </div>
@@ -71,17 +88,17 @@
         ondrop="handleFileDrop(event)" 
         ondragover="handleDragOver(event)" 
         ondragleave="handleDragLeave(event)"
-        class="border-2 border-dashed border-[#333333] hover:border-[#555555] transition rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center"
-        onclick="document.getElementById('csvFileInput').click()"
+        class="border-2 border-dashed border-[#333333] hover:border-[#555555] active:border-[#1ed760] transition rounded-2xl p-6 sm:p-8 text-center cursor-pointer flex flex-col items-center justify-center active:scale-[0.99]"
+        onclick="triggerHaptic(10); document.getElementById('csvFileInput').click()"
       >
         <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
-        <div class="w-14 h-14 bg-[#181818] rounded-full flex items-center justify-center mb-3 text-2xl text-[#1ed760]">
+        <div class="w-12 h-12 sm:w-14 sm:h-14 bg-[#181818] rounded-full flex items-center justify-center mb-3 text-xl sm:text-2xl text-[#1ed760]">
           <i class="fa-solid fa-cloud-arrow-up"></i>
         </div>
-        <h3 class="font-bold text-base mb-1">Перетащи сюда .csv файл</h3>
-        <p class="text-xs text-gray-400 mb-4">Файл скачанный с Exportify</p>
+        <h3 class="font-bold text-sm sm:text-base mb-1">Выбери или перетащи .csv</h3>
+        <p class="text-[11px] sm:text-xs text-gray-400 mb-3">Файл экспортированный из Exportify</p>
         <span class="bg-[#282828] hover:bg-[#333333] text-xs font-semibold px-4 py-2 rounded-xl border border-[#3e3e3e] transition">
-          Или выбери вручную
+          Открыть файл
         </span>
       </div>
 
@@ -92,65 +109,65 @@
     </div>
 
     <!-- Panel 2: Text Input -->
-    <div id="textPanel" class="card-glass p-6 rounded-2xl mb-8 hidden">
-      <label class="block text-sm font-medium text-gray-300 mb-1">Вставь список треков или артистов:</label>
-      <textarea id="rawArtistsInput" rows="6" placeholder="Rihanna&#10;Metallica&#10;Radiohead&#10;..." class="w-full bg-[#121212] border border-[#2c2c2c] rounded-xl p-3 text-sm focus:outline-none focus:border-[#1ed760] transition"></textarea>
+    <div id="textPanel" class="card-glass p-5 sm:p-6 rounded-2xl mb-7 hidden">
+      <label class="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5">Вставь список треков или артистов:</label>
+      <textarea id="rawArtistsInput" rows="5" placeholder="Rihanna&#10;Metallica&#10;Radiohead&#10;..." class="w-full bg-[#121212] border border-[#2c2c2c] rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:border-[#1ed760] transition"></textarea>
       
-      <button onclick="analyzeManualList()" class="w-full mt-4 bg-spotify text-black font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+      <button onclick="analyzeManualList()" class="w-full mt-3 bg-spotify text-black font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 active:scale-[0.98]">
         <i class="fa-solid fa-chart-pie"></i> Рассчитать статистику
       </button>
     </div>
 
     <!-- Results Section -->
-    <div id="results" class="hidden space-y-6">
+    <div id="results" class="hidden space-y-5">
       
       <!-- Metrics Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="card-glass p-4 rounded-xl text-center">
-          <div class="text-gray-400 text-xs mb-1">Артистов в Топе</div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+        <div class="card-glass p-3.5 sm:p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-[11px] mb-1">Артистов в Топе</div>
           <div id="matchedCount" class="text-2xl sm:text-3xl font-black spotify-green">0</div>
-          <div class="text-[11px] text-gray-500">из топ-500 мира</div>
+          <div class="text-[10px] text-gray-500">из топ-500 мира</div>
         </div>
-        <div class="card-glass p-4 rounded-xl text-center">
-          <div class="text-gray-400 text-xs mb-1">Песен топ-артистов</div>
+        <div class="card-glass p-3.5 sm:p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-[11px] mb-1">Песен топ-артистов</div>
           <div id="topTracksStats" class="text-2xl sm:text-3xl font-black text-[#1ed760]">0</div>
-          <div id="topTracksSub" class="text-[11px] text-gray-500">0% плейлиста</div>
+          <div id="topTracksSub" class="text-[10px] text-gray-500">0% плейлиста</div>
         </div>
-        <div class="card-glass p-4 rounded-xl text-center">
-          <div class="text-gray-400 text-xs mb-1">Самый популярный</div>
+        <div class="card-glass p-3.5 sm:p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-[11px] mb-1">Самый популярный</div>
           <div id="highestRank" class="text-lg sm:text-xl font-bold truncate">#—</div>
-          <div id="highestName" class="text-[11px] text-gray-400 truncate">—</div>
+          <div id="highestName" class="text-[10px] text-gray-400 truncate">—</div>
         </div>
-        <div class="card-glass p-4 rounded-xl text-center">
-          <div class="text-gray-400 text-xs mb-1">Андеграунд</div>
+        <div class="card-glass p-3.5 sm:p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-[11px] mb-1">Андеграунд</div>
           <div id="indieCount" class="text-2xl sm:text-3xl font-black text-purple-400">0</div>
-          <div class="text-[11px] text-gray-500">артистов вне топа</div>
+          <div class="text-[10px] text-gray-500">артистов вне топа</div>
         </div>
       </div>
 
       <!-- Verdict + Share -->
-      <div id="verdictBox" class="card-glass p-4 rounded-xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
+      <div id="verdictBox" class="card-glass p-4 rounded-xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3.5">
           <div id="verdictEmoji" class="text-3xl shrink-0">🎧</div>
           <div>
             <h3 id="verdictTitle" class="font-bold text-sm sm:text-base">Вердикт</h3>
-            <p id="verdictDesc" class="text-xs sm:text-sm text-gray-400">...</p>
+            <p id="verdictDesc" class="text-xs sm:text-sm text-gray-400 leading-snug">...</p>
           </div>
         </div>
-        <button onclick="shareResult()" class="shrink-0 w-full sm:w-auto bg-[#282828] hover:bg-[#333333] border border-[#3e3e3e] hover:border-[#1ed760] text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+        <button onclick="shareResult()" class="shrink-0 w-full sm:w-auto bg-[#282828] hover:bg-[#333333] active:scale-[0.98] border border-[#3e3e3e] hover:border-[#1ed760] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
           <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Поделиться
         </button>
       </div>
 
       <!-- Matched Top Artists -->
-      <div class="card-glass p-5 rounded-2xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+      <div class="card-glass p-4 sm:p-5 rounded-2xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2">
           <div>
             <div class="flex items-center gap-2">
               <h3 class="font-bold text-sm sm:text-base">Твои артисты из мирового Топ-500</h3>
-              <span id="matchedBadge" class="text-xs bg-[#282828] text-[#1ed760] font-bold px-2.5 py-1 rounded-full">0</span>
+              <span id="matchedBadge" class="text-xs bg-[#282828] text-[#1ed760] font-bold px-2.5 py-0.5 rounded-full">0</span>
             </div>
-            <p class="text-xs text-gray-400 mt-1">💡 <b>Нажми на артиста</b>, чтобы открыть список всех его треков у тебя:</p>
+            <p class="text-xs text-gray-400 mt-0.5">💡 <b>Нажми на артиста</b>, чтобы открыть треки:</p>
           </div>
           <div class="relative w-full sm:w-48 shrink-0">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
@@ -161,11 +178,11 @@
       </div>
 
       <!-- Indie Artists -->
-      <div class="card-glass p-5 rounded-2xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+      <div class="card-glass p-4 sm:p-5 rounded-2xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2">
           <div class="flex items-center gap-2">
             <h3 class="font-bold text-sm sm:text-base">Андеграунд (нет в мировом топ-500)</h3>
-            <span id="indieBadge" class="text-xs bg-[#282828] text-purple-300 font-bold px-2.5 py-1 rounded-full">0</span>
+            <span id="indieBadge" class="text-xs bg-[#282828] text-purple-300 font-bold px-2.5 py-0.5 rounded-full">0</span>
           </div>
           <div class="relative w-full sm:w-48 shrink-0">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
@@ -185,19 +202,22 @@
     <span id="toastMsg">Результат скопирован!</span>
   </div>
 
-  <!-- Modal: Clean Track List -->
-  <div id="artistModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="card-glass bg-[#121212] border border-[#2e2e2e] w-full max-w-lg rounded-2xl p-6 relative max-h-[85vh] flex flex-col shadow-2xl">
+  <!-- Spotify-style Bottom Sheet (Mobile Drawer & Desktop Modal) -->
+  <div id="artistModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200">
+    <div id="modalSheet" class="card-glass bg-[#121212] border-t sm:border border-[#282828] w-full max-w-lg rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 relative max-h-[85vh] sm:max-h-[80vh] flex flex-col shadow-2xl transform transition-transform duration-300 translate-y-full sm:translate-y-0">
       
-      <button onclick="closeModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg transition">
+      <!-- Drag Handle Bar for Mobile -->
+      <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-3.5 sm:hidden"></div>
+
+      <button onclick="closeModal()" class="absolute top-4 sm:top-5 right-4 sm:right-5 text-gray-400 hover:text-white text-lg transition p-1 cursor-pointer">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
       <div class="flex items-center gap-3 mb-2">
         <span id="modalRankBadge" class="text-xs font-bold px-2.5 py-1 bg-[#242424] text-[#1ed760] rounded-lg">#0</span>
-        <h3 id="modalArtistName" class="text-xl font-black text-white truncate">Artist Name</h3>
+        <h3 id="modalArtistName" class="text-lg sm:text-xl font-black text-white truncate">Artist Name</h3>
       </div>
-      <p class="text-xs text-gray-400 mb-4">Всего песен в твоем плейлисте: <b id="modalTrackCount" class="text-white">0</b></p>
+      <p class="text-xs text-gray-400 mb-3.5">Всего песен в твоем плейлисте: <b id="modalTrackCount" class="text-white">0</b></p>
 
       <div id="modalTrackList" class="space-y-2 overflow-y-auto pr-1 flex-1"></div>
 
@@ -263,7 +283,14 @@
     let rawMatchedList = [];
     let rawIndieList = [];
 
-    // Улучшенная нормализация с поддержкой Unicode NFD (удаление акцентов: Beyoncé -> beyonce)
+    // Тактильный виброотклик для Android / Mobile
+    function triggerHaptic(duration = 15) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(duration); } catch(e) {}
+      }
+    }
+
+    // Улучшенная нормализация с поддержкой Unicode NFD (Beyoncé -> beyonce)
     function clean(str) {
       if (!str) return '';
       return str
@@ -284,6 +311,7 @@
     }
 
     function switchTab(mode) {
+      triggerHaptic(10);
       const fBtn = document.getElementById('tabFileBtn');
       const tBtn = document.getElementById('tabTextBtn');
       const fPanel = document.getElementById('filePanel');
@@ -292,13 +320,13 @@
       if (mode === 'file') {
         fPanel.classList.remove('hidden');
         tPanel.classList.add('hidden');
-        fBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2";
-        tBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2";
+        fBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2 active:scale-[0.98]";
+        tBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2 active:scale-[0.98]";
       } else {
         tPanel.classList.remove('hidden');
         fPanel.classList.add('hidden');
-        tBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2";
-        fBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2";
+        tBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2 active:scale-[0.98]";
+        fBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2 active:scale-[0.98]";
       }
     }
 
@@ -306,11 +334,15 @@
     function handleDragLeave(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('dropzone-active'); }
     function handleFileDrop(e) {
       e.preventDefault();
+      triggerHaptic(20);
       document.getElementById('dropZone').classList.remove('dropzone-active');
       if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
     }
     function handleFileSelect(e) {
-      if (e.target.files.length) processFile(e.target.files[0]);
+      if (e.target.files.length) {
+        triggerHaptic(20);
+        processFile(e.target.files[0]);
+      }
     }
 
     function processFile(file) {
@@ -383,6 +415,7 @@
     }
 
     function analyzeManualList() {
+      triggerHaptic(15);
       const rawText = document.getElementById('rawArtistsInput').value;
       if (!rawText.trim()) return alert("Введи треки или артистов!");
 
@@ -492,7 +525,7 @@
     function renderMatchedList(list) {
       const matchedContainer = document.getElementById('matchedList');
       matchedContainer.innerHTML = list.map(a => `
-        <button onclick="openArtistModal('${escapeHtml(a.name)}', true)" class="group flex items-center gap-2 bg-[#181818] hover:bg-[#222222] border border-[#282828] hover:border-[#1ed760] px-3 py-2 rounded-xl text-xs transition text-left cursor-pointer">
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', true)" class="group flex items-center gap-2 bg-[#181818] hover:bg-[#222222] active:bg-[#282828] border border-[#282828] hover:border-[#1ed760] active:scale-[0.97] px-3 py-2 rounded-xl text-xs transition text-left cursor-pointer">
           <span class="text-gray-400 group-hover:text-[#1ed760] font-bold">#${a.rank}</span>
           <span class="font-semibold text-white">${a.name}</span>
           <span class="bg-[#1ed760]/10 text-[#1ed760] font-bold px-2 py-0.5 rounded-md text-[11px] ml-1">
@@ -507,7 +540,7 @@
     function renderIndieList(list) {
       const indieContainer = document.getElementById('indieList');
       indieContainer.innerHTML = list.map(a => `
-        <button onclick="openArtistModal('${escapeHtml(a.name)}', false)" class="flex items-center gap-2 bg-[#181818] hover:bg-[#222222] border border-[#282828] hover:border-purple-400 px-3 py-1.5 rounded-lg text-xs text-gray-300 transition text-left cursor-pointer">
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', false)" class="flex items-center gap-2 bg-[#181818] hover:bg-[#222222] active:bg-[#282828] border border-[#282828] hover:border-purple-400 active:scale-[0.97] px-3 py-1.5 rounded-lg text-xs text-gray-300 transition text-left cursor-pointer">
           <span class="truncate max-w-[150px]">${a.name}</span>
           ${a.tracks.length > 1 ? `<span class="text-purple-400 text-[10px] font-bold">${a.tracks.length}</span>` : ''}
         </button>
@@ -528,6 +561,7 @@
     }
 
     function shareResult() {
+      triggerHaptic(25);
       if (!currentAnalysisData.matched) return;
 
       const matchedCount = document.getElementById('matchedCount').innerText;
@@ -574,7 +608,9 @@
       }, 3000);
     }
 
+    // Открытие Spotify-шторки
     function openArtistModal(artistName, isTop) {
+      triggerHaptic(12);
       const data = isTop ? currentAnalysisData.matched[artistName] : currentAnalysisData.indie[artistName];
       if (!data) return;
 
@@ -596,7 +632,7 @@
         const meta = [t.album, t.year].filter(Boolean).join(' • ');
 
         return `
-          <div class="flex items-center justify-between p-3 bg-[#181818] border border-[#242424] rounded-xl text-xs">
+          <div class="flex items-center justify-between p-3 bg-[#181818] active:bg-[#202020] border border-[#242424] rounded-xl text-xs transition">
             <div class="truncate mr-3">
               <div class="font-semibold text-white truncate">${t.title}</div>
               ${meta ? `<div class="text-gray-500 text-[11px] truncate mt-0.5">${meta}</div>` : ''}
@@ -606,17 +642,56 @@
         `;
       }).join('');
 
-      document.getElementById('artistModal').classList.remove('hidden');
+      const modal = document.getElementById('artistModal');
+      const sheet = document.getElementById('modalSheet');
+      modal.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        sheet.classList.remove('translate-y-full');
+      });
     }
 
+    // Закрытие шторки с плавной анимацией
     function closeModal() {
-      document.getElementById('artistModal').classList.add('hidden');
+      triggerHaptic(10);
+      const modal = document.getElementById('artistModal');
+      const sheet = document.getElementById('modalSheet');
+      sheet.classList.add('translate-y-full');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 220);
     }
 
     window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
     document.getElementById('artistModal')?.addEventListener('click', (e) => {
       if (e.target.id === 'artistModal') closeModal();
     });
+
+    // Жест свайпа вниз для закрытия шторки на мобилках
+    (function initSwipeToDismiss() {
+      const sheet = document.getElementById('modalSheet');
+      let startY = 0;
+      let currentY = 0;
+
+      sheet.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+
+      sheet.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        if (diff > 0 && sheet.scrollTop <= 0) {
+          sheet.style.transform = `translateY(${diff}px)`;
+        }
+      }, { passive: true });
+
+      sheet.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        sheet.style.transform = '';
+        if (diff > 80 && sheet.scrollTop <= 0) {
+          closeModal();
+        }
+      });
+    })();
 
     function escapeHtml(str) {
       return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
