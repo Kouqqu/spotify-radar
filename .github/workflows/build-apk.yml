@@ -60,16 +60,16 @@ jobs:
         with:
           make_latest: true
           tag_name: v1.2.0-${{ github.run_number }}
-          name: "Spotify Radar Native (v1.2.${{ github.run_number }})"
+          name: "Spotify Radar (v1.2.${{ github.run_number }})"
           body: |
-            ### Настоящее нативное приложение Spotify Radar на Kotlin / Jetpack Compose!
+            ### Обновление Spotify Radar
             
-            - **100% Native**: чистый Kotlin и Jetpack Compose, без браузерного движка и без WebView.
-            - **120 FPS**: мгновенный отклик и плавный нативный скролл.
-            - **Галерея**: прямое сохранение Stories-карточки 1080×1920 в память телефона через MediaStore.
-            - **Шеринг**: системный Android Intent (Telegram, WhatsApp, VK, Stories).
-            - **Импорт .csv**: системный проводник Android для выбора плейлиста.
-            - **Постоянный ключ подписи**: обновления устанавливаются поверх без ошибок.
+            - Подправлена производительность и плавность интерфейса
+            - Плавная анимация переключения вкладок и выпадающих списков
+            - Переведено на Kotlin (без WebView)
+            - Исправлен перенос текста на карточке для Stories
+            - Списки артистов сделаны выпадающими (аккордеон)
+            - Системный выбор файлов и прямое сохранение карточки в галерею
           files: android/app/build/outputs/apk/debug/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
