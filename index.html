@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Top 500 Radar</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎧</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0c0d0e; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .spotify-green { color: #1ed760; }
+    .bg-spotify { background-color: #1ed760; }
+    .bg-spotify:hover { background-color: #1fdf64; }
+    .card-glass { background: rgba(24, 24, 24, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .dropzone-active { border-color: #1ed760 !important; background-color: rgba(30, 215, 96, 0.05) !important; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 sm:p-8">
+
+  <!-- Header -->
+  <header class="text-center max-w-2xl my-6">
+    <div class="inline-flex items-center gap-3 mb-1">
+      <i class="fa-brands fa-spotify text-4xl text-[#1ed760]"></i>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Spotify Top 500 Radar</h1>
+    </div>
+    <p class="text-gray-400 text-sm">Узнай, сколько твоих артистов и песен входят в мировой топ-500 Spotify</p>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-2xl">
+
+    <!-- Mode Switcher -->
+    <div class="grid grid-cols-2 gap-1 bg-[#181818] p-1 rounded-xl mb-6 border border-[#282828] text-sm">
+      <button id="tabFileBtn" onclick="switchTab('file')" class="py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-file-csv text-[#1ed760]"></i> Загрузить файл .csv
+      </button>
+      <button id="tabTextBtn" onclick="switchTab('text')" class="py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-align-left"></i> Вставить текст
+      </button>
+    </div>
+
+    <!-- Panel 1: File Drop + Guide -->
+    <div id="filePanel" class="card-glass p-6 rounded-2xl mb-8">
+      
+      <!-- Mini Guide -->
+      <div class="mb-5 p-4 rounded-xl bg-[#141414] border border-[#242424]">
+        <div class="flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-circle-question text-[#1ed760] text-sm"></i>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-300">Как получить файл:</h4>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-400">
+          <div class="flex gap-2.5 items-start">
+            <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">1</span>
+            <span>Зайди на <a href="https://exportify.net" target="_blank" class="text-white hover:text-[#1ed760] font-semibold underline inline-flex items-center gap-1 transition">exportify.net <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a></span>
+          </div>
+          <div class="flex gap-2.5 items-start">
+            <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">2</span>
+            <span>Нажми <b>Get Started</b> и выбери <b>Export</b> у плейлиста или <i>Liked Songs</i></span>
+          </div>
+          <div class="flex gap-2.5 items-start">
+            <span class="w-5 h-5 rounded-full bg-[#202020] text-[#1ed760] font-bold flex items-center justify-center shrink-0 text-[11px]">3</span>
+            <span>Скачается файл <b>.csv</b> — перетащи его в рамку ниже</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div 
+        id="dropZone" 
+        ondrop="handleFileDrop(event)" 
+        ondragover="handleDragOver(event)" 
+        ondragleave="handleDragLeave(event)"
+        class="border-2 border-dashed border-[#333333] hover:border-[#555555] transition rounded-2xl p-8 text-center cursor-pointer flex flex-col items-center justify-center"
+        onclick="document.getElementById('csvFileInput').click()"
+      >
+        <input type="file" id="csvFileInput" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
+        <div class="w-14 h-14 bg-[#181818] rounded-full flex items-center justify-center mb-3 text-2xl text-[#1ed760]">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <h3 class="font-bold text-base mb-1">Перетащи сюда .csv файл</h3>
+        <p class="text-xs text-gray-400 mb-4">Файл скачанный с Exportify</p>
+        <span class="bg-[#282828] hover:bg-[#333333] text-xs font-semibold px-4 py-2 rounded-xl border border-[#3e3e3e] transition">
+          Или выбери вручную
+        </span>
+      </div>
+
+      <div id="fileInfo" class="hidden mt-4 p-3 bg-[#181818] border border-[#282828] rounded-xl flex items-center justify-between text-xs">
+        <span id="fileName" class="text-gray-300 font-medium truncate max-w-[60%]">file.csv</span>
+        <span id="fileCount" class="text-[#1ed760] font-bold">0 треков</span>
+      </div>
+    </div>
+
+    <!-- Panel 2: Text Input -->
+    <div id="textPanel" class="card-glass p-6 rounded-2xl mb-8 hidden">
+      <label class="block text-sm font-medium text-gray-300 mb-1">Вставь список треков или артистов:</label>
+      <textarea id="rawArtistsInput" rows="6" placeholder="Rihanna&#10;Metallica&#10;Radiohead&#10;..." class="w-full bg-[#121212] border border-[#2c2c2c] rounded-xl p-3 text-sm focus:outline-none focus:border-[#1ed760] transition"></textarea>
+      
+      <button onclick="analyzeManualList()" class="w-full mt-4 bg-spotify text-black font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-chart-pie"></i> Рассчитать статистику
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="hidden space-y-6">
+      
+      <!-- Metrics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="card-glass p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-xs mb-1">Артистов в Топе</div>
+          <div id="matchedCount" class="text-2xl sm:text-3xl font-black spotify-green">0</div>
+          <div class="text-[11px] text-gray-500">из топ-500 мира</div>
+        </div>
+        <div class="card-glass p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-xs mb-1">Песен топ-артистов</div>
+          <div id="topTracksStats" class="text-2xl sm:text-3xl font-black text-[#1ed760]">0</div>
+          <div id="topTracksSub" class="text-[11px] text-gray-500">0% плейлиста</div>
+        </div>
+        <div class="card-glass p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-xs mb-1">Самый популярный</div>
+          <div id="highestRank" class="text-lg sm:text-xl font-bold truncate">#—</div>
+          <div id="highestName" class="text-[11px] text-gray-400 truncate">—</div>
+        </div>
+        <div class="card-glass p-4 rounded-xl text-center">
+          <div class="text-gray-400 text-xs mb-1">Андеграунд</div>
+          <div id="indieCount" class="text-2xl sm:text-3xl font-black text-purple-400">0</div>
+          <div class="text-[11px] text-gray-500">артистов вне топа</div>
+        </div>
+      </div>
+
+      <!-- Verdict + Share -->
+      <div id="verdictBox" class="card-glass p-4 rounded-xl border-l-4 border-[#1ed760] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div id="verdictEmoji" class="text-3xl shrink-0">🎧</div>
+          <div>
+            <h3 id="verdictTitle" class="font-bold text-sm sm:text-base">Вердикт</h3>
+            <p id="verdictDesc" class="text-xs sm:text-sm text-gray-400">...</p>
+          </div>
+        </div>
+        <button onclick="shareResult()" class="shrink-0 w-full sm:w-auto bg-[#282828] hover:bg-[#333333] border border-[#3e3e3e] hover:border-[#1ed760] text-white text-xs font-semibold px-4 py-2 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-share-nodes text-[#1ed760]"></i> Поделиться
+        </button>
+      </div>
+
+      <!-- Matched Top Artists -->
+      <div class="card-glass p-5 rounded-2xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-sm sm:text-base">Твои артисты из мирового Топ-500</h3>
+              <span id="matchedBadge" class="text-xs bg-[#282828] text-[#1ed760] font-bold px-2.5 py-1 rounded-full">0</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">💡 <b>Нажми на артиста</b>, чтобы открыть список всех его треков у тебя:</p>
+          </div>
+          <div class="relative w-full sm:w-48 shrink-0">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+            <input type="text" id="searchMatchedInput" oninput="filterMatchedArtists()" placeholder="Поиск артиста..." class="w-full bg-[#141414] border border-[#282828] focus:border-[#1ed760] rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
+          </div>
+        </div>
+        <div id="matchedList" class="flex flex-wrap gap-2 max-h-80 overflow-y-auto pr-1 mt-2"></div>
+      </div>
+
+      <!-- Indie Artists -->
+      <div class="card-glass p-5 rounded-2xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
+          <div class="flex items-center gap-2">
+            <h3 class="font-bold text-sm sm:text-base">Андеграунд (нет в мировом топ-500)</h3>
+            <span id="indieBadge" class="text-xs bg-[#282828] text-purple-300 font-bold px-2.5 py-1 rounded-full">0</span>
+          </div>
+          <div class="relative w-full sm:w-48 shrink-0">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+            <input type="text" id="searchIndieInput" oninput="filterIndieArtists()" placeholder="Поиск артиста..." class="w-full bg-[#141414] border border-[#282828] focus:border-purple-400 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none transition">
+          </div>
+        </div>
+        <div id="indieList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1 mt-2"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-[#181818] border border-[#282828] text-white font-medium text-xs px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none z-50 flex items-center gap-2">
+    <i class="fa-solid fa-circle-check text-[#1ed760] text-sm"></i>
+    <span id="toastMsg">Результат скопирован!</span>
+  </div>
+
+  <!-- Modal: Clean Track List -->
+  <div id="artistModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="card-glass bg-[#121212] border border-[#2e2e2e] w-full max-w-lg rounded-2xl p-6 relative max-h-[85vh] flex flex-col shadow-2xl">
+      
+      <button onclick="closeModal()" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-2">
+        <span id="modalRankBadge" class="text-xs font-bold px-2.5 py-1 bg-[#242424] text-[#1ed760] rounded-lg">#0</span>
+        <h3 id="modalArtistName" class="text-xl font-black text-white truncate">Artist Name</h3>
+      </div>
+      <p class="text-xs text-gray-400 mb-4">Всего песен в твоем плейлисте: <b id="modalTrackCount" class="text-white">0</b></p>
+
+      <div id="modalTrackList" class="space-y-2 overflow-y-auto pr-1 flex-1"></div>
+
+    </div>
+  </div>
+
+  <script>
+    // Топ-500 Kworb
+    const TOP_500_ARTISTS = [
+      "Bruno Mars","Justin Bieber","Rihanna","The Weeknd","Taylor Swift","Shakira","Lady Gaga","Ariana Grande","Bad Bunny","Drake",
+      "Coldplay","Michael Jackson","Katy Perry","David Guetta","Pitbull","Maroon 5","Ed Sheeran","Calvin Harris","Billie Eilish","Eminem",
+      "J Balvin","Post Malone","Dua Lipa","Kanye West","Sia","Kendrick Lamar","Black Eyed Peas","Olivia Rodrigo","Beyoncé","SZA",
+      "Daddy Yankee","Lana Del Rey","Harry Styles","KAROL G","Tame Impala","Sean Paul","Travis Scott","Justin Timberlake","Adele","Shawn Mendes",
+      "Miley Cyrus","Zara Larsson","Chris Brown","Linkin Park","Sam Smith","Marshmello","Sabrina Carpenter","Arctic Monkeys","Doja Cat","Halsey",
+      "Shreya Ghoshal","Ellie Goulding","Madonna","Arijit Singh","sombr","Ozuna","Elton John","Rauw Alejandro","Khalid","Imagine Dragons",
+      "The Chainsmokers","Alicia Keys","Burna Boy","Swae Lee","Future","Dominic Fike","Fleetwood Mac","Olivia Dean","Pritam","Britney Spears",
+      "Ne-Yo","JAY-Z","Camila Cabello","JENNIE","Maluma","OneRepublic","Queen","Charlie Puth","USHER","Red Hot Chili Peppers",
+      "DJ Snake","Lil Wayne","Fuerza Regida","The Neighbourhood","A.R. Rahman","Alex Warren","Farruko","Nicki Minaj","Kesha","Jennifer Lopez",
+      "Anuel AA","Radiohead","Flo Rida","Selena Gomez","One Direction","50 Cent","Peso Pluma","Bebe Rexha","Green Day","Wiz Khalifa",
+      "Diplo","Oasis","Myke Towers","RAYE","ABBA","The Kid LAROI","Mac Miller","Don Toliver","Tate McRae","HUGEL",
+      "Don Omar","Daniel Caesar","Metro Boomin","Akon","Teddy Swims","The Goo Goo Dolls","Avicii","P!nk","21 Savage","Benson Boone",
+      "Playboi Carti","Disney","Guns N' Roses","Pharrell Williams","Twenty One Pilots","The Police","Empire Of The Sun","Malcolm Todd","Hozier","Nirvana",
+      "Jason Derulo","Romeo Santos","A$AP Rocky","Frank Ocean","Anitta","Grupo Frontera","AC/DC","Gorillaz","Nicky Jam","Tyler, The Creator",
+      "Demi Lovato","Feid","Manuel Turizo","J. Cole","Irshad Kamil","KATSEYE","Steve Lacy","Mariah Carey","Enrique Iglesias","The Beatles",
+      "The Killers","Tems","Bon Jovi","Nelly Furtado","Clean Bandit","Paramore","Sachin-Jigar","Ty Dolla $ign","Gracie Abrams","Mithoon",
+      "Kali Uchis","Djo","Morgan Wallen","Tiësto","Amitabh Bhattacharya","Ravyn Lenae","Anne-Marie","Mark Ronson","Becky G","Ovy On The Drums",
+      "Snoop Dogg","Christina Aguilera","Udit Narayan","The Cranberries","Childish Gambino","Quevedo","Macklemore","Major Lazer","BTS","The Script",
+      "Billy Joel","Creedence Clearwater Revival","Ryan Castro","Vishal-Shekhar","Ella Langley","Gunna","Metallica","Miguel","Sayeed Quadri","Bee Gees",
+      "The Marías","Phil Collins","Omar Courtz","Vance Joy","Beéle","Noah Kahan","Temper City","Tanishk Bagchi","Backstreet Boys","Cardi B",
+      "Atif Aslam","Cris MJ","JHAYCO","Cigarettes After Sex","XXXTENTACION","Dave","Kodak Black","Arcángel","Lil Baby","Bryan Adams",
+      "French Montana","Dolly Parton","Chappell Roan","Neton Vega","Sunidhi Chauhan","Whitney Houston","DaBaby","Shankar Mahadevan","KK","Natasha Bedingfield",
+      "Gigi Perez","Junior H","Danny Ocean","Lil Uzi Vert","Daft Punk","Outkast","Zion & Lennox","Keyshia Cole","Juice WRLD","PinkPantheress",
+      "SIENNA SPIRO","Nickelback","The Rolling Stones","G-Eazy","Timbaland","Tom Odell","Avril Lavigne","Wisin & Yandel","ZAYN","Carín León",
+      "Plan B","Young Thug","Kumaar","Eagles","Alan Walker","James Arthur","Chencho Corleone","Kygo","Journey","AFROJACK",
+      "Aerosmith","Swedish House Mafia","2Pac","Jess Glynne","PARTYNEXTDOOR","Charli xcx","Robin Schulz","Tainy","Maná","benny blanco",
+      "Sean Kingston","Ava Max","Tinashe","B.o.B","TOTO","Pink Floyd","Ñengo Flow","Mohit Chauhan","The Notorious B.I.G.","Joji",
+      "Sonu Nigam","Yandel","Panic! At The Disco","Daryl Hall & John Oates","Bizarrap","Vishal Mishra","Kehlani","Sade","Alka Yagnik","Kid Cudi",
+      "Dire Straits","Evanescence","Kings of Leon","Rema","Lord Huron","Lorde","The Cure","Prince Royce","Tyla","El Alfa",
+      "Shaggy","ROSALÍA","Fall Out Boy","Gwen Stefani","ROSÉ","KPop Demon Hunters Cast","Aventura","Blessd","Trippie Redd","Bob Marley & The Wailers",
+      "Luke Combs","System Of A Down","Shankar-Ehsaan-Loy","Nelly","Natanael Cano","Oscar Maydon","Manoj Muntashir","Megan Thee Stallion","Florence + The Machine","Earth, Wind & Fire",
+      "Chinmayi","Tory Lanez","Kelly Clarkson","Luis Fonsi","Tove Lo","Chris Stapleton","El Bogueto","Tito Double P","Alok","T-Pain",
+      "Himesh Reshammiya","Tears For Fears","Jack Harlow","Fred again..","Train","beabadoobee","Anirudh Ravichander","Sebastian Yatra","Jay Wheeler","Shashwat Sachdev",
+      "DJ Khaled","Doechii","Tyga","Lewis Capaldi","Glass Animals","GIVĒON","EJAE","Elvis Presley","a-ha","Foo Fighters",
+      "Badshah","Martin Garrix","Sameer Anjaan","The Smiths","Macklemore & Ryan Lewis","R.E.M.","Disclosure","Zach Bryan","U2","Marvin Gaye",
+      "TV Girl","Lola Young","Bastille","Grupo Firme","Amit Trivedi","Måneskin","Brent Faiyaz","The Offspring","Amaal Mallik","Gabito Ballesteros",
+      "Keane","Carly Rae Jepsen","Rels B","REI AMI","Weezer","Prince","Lost Frequencies","Dr. Dre","Limp Bizkit","Anuv Jain",
+      "Javed Ali","Amy Winehouse","SOLTO (FR)","Led Zeppelin","Rahat Fateh Ali Khan","HUNTR/X","Anderson .Paak","Gym Class Heroes","Bonnie Tyler","AUDREY NUNA",
+      "Vishal Dadlani","Jonas Blue","Yung Beef","De La Ghetto","George Michael","De La Soul","Shilpa Rao","Kapo","Lenny Tavárez","Sajid-Wajid",
+      "Mc Gw","Sech","Anu Malik","Gotye","John Legend","MGMT","Luis Miguel","Big Sean","Bruce Springsteen","Zion",
+      "Central Cee","Young Miko","Rex Orange County","Marco Antonio Solís","Ray Dalton","Skrillex","Foreigner","Stevie Wonder","Luis R Conriquez","Mike Posner",
+      "Lynyrd Skynyrd","Lily-Rose Depp","Justin Quiles","Bob Sinclar","Aitana","David Bowie","Mac DeMarco","LAUV","Gucci Mane","Jessie J",
+      "Tulus","Camilo","Sachet-Parampara","ILLIT","JVKE","Shaarib Toshi","Laufey","Reik","Shaboozey","Muse",
+      "5 Seconds of Summer","Conan Gray","Meghan Trainor","Jubin Nautiyal","Kylie Minogue","Alessia Cara","Ayra Starr","Juanes","The 1975","Bryson Tiller",
+      "Kimbra","Calle 24","Migos","FloyyMenor","blink-182","Three Days Grace","Mitski","Fetty Wap","The Fray","Zedd",
+      "Billy Idol","Harris Jayaraj","Sachet Tandon","Chino Pacas","Mora","LE SSERAFIM","Neeti Mohan","BigXthaPlug","Jeet Gannguli","rusowsky",
+      "De La Rose","Mustafa Zahid","Jason Mraz","Bill Withers","Depeche Mode","Scorpions","Clairo","Ricky Martin","Jowell & Randy","Wisin",
+      "Lil Nas X","Marc Anthony","Julión Álvarez y su Norteño Banda","Rae Sremmurd","Topic","Raim Laode","Troye Sivan","Banda MS de Sergio Lizárraga","Dei V","MC Meno K",
+      "Julieta Venegas","Christian Nodal","Daya","Lenny Kravitz","Foster The People","MC Ryan SP","BLACKPINK","felix jaehn","Noriel","Cyndi Lauper",
+      "Disturbed","Alejandro Sanz","Annie Lennox","Lil Peep","Imogen Heap","Chase Atlantic","Jasmine Sandlas","Faheem Abdullah","The Outfield","Lil Durk"
+    ];
+
+    let currentAnalysisData = { matched: {}, indie: {} };
+    let rawMatchedList = [];
+    let rawIndieList = [];
+
+    // Улучшенная нормализация с поддержкой Unicode NFD (удаление акцентов: Beyoncé -> beyonce)
+    function clean(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9а-яё]/gi, "")
+        .trim();
+    }
+
+    // Разделение множественных артистов и фитов (feat., ft., &, /, x)
+    function splitArtists(artistStr) {
+      if (!artistStr) return [];
+      return artistStr
+        .split(/[,/&]|\bfeat\.?\b|\bft\.?\b|\bfeaturing\b|\bwith\b|\bx\b/i)
+        .map(a => a.trim())
+        .filter(Boolean);
+    }
+
+    function switchTab(mode) {
+      const fBtn = document.getElementById('tabFileBtn');
+      const tBtn = document.getElementById('tabTextBtn');
+      const fPanel = document.getElementById('filePanel');
+      const tPanel = document.getElementById('textPanel');
+
+      if (mode === 'file') {
+        fPanel.classList.remove('hidden');
+        tPanel.classList.add('hidden');
+        fBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2";
+        tBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2";
+      } else {
+        tPanel.classList.remove('hidden');
+        fPanel.classList.add('hidden');
+        tBtn.className = "py-2.5 font-medium rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-2";
+        fBtn.className = "py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-2";
+      }
+    }
+
+    function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dropzone-active'); }
+    function handleDragLeave(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('dropzone-active'); }
+    function handleFileDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.remove('dropzone-active');
+      if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+    }
+    function handleFileSelect(e) {
+      if (e.target.files.length) processFile(e.target.files[0]);
+    }
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const tracks = parseCSVTracksRobust(text);
+
+        document.getElementById('fileInfo').classList.remove('hidden');
+        document.getElementById('fileName').innerText = file.name;
+        document.getElementById('fileCount').innerText = `${tracks.length} треков`;
+
+        analyzePlaylist(tracks);
+      };
+      reader.readAsText(file);
+    }
+
+    // Парсер CSV с умной разбивкой артистов
+    function parseCSVTracksRobust(text) {
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        const next = text[i + 1];
+
+        if (c === '"') {
+          if (inQuotes && next === '"') { cell += '"'; i++; }
+          else { inQuotes = !inQuotes; }
+        } else if (c === ',' && !inQuotes) {
+          row.push(cell.trim()); cell = '';
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (c === '\r' && next === '\n') i++;
+          row.push(cell.trim());
+          if (row.some(r => r !== '')) rows.push(row);
+          row = []; cell = '';
+        } else {
+          cell += c;
+        }
+      }
+      if (cell !== '' || row.length > 0) {
+        row.push(cell.trim());
+        if (row.some(r => r !== '')) rows.push(row);
+      }
+
+      if (rows.length < 2) return [];
+
+      const headers = rows[0].map(h => h.toLowerCase().trim());
+      
+      const trackIdx = headers.indexOf('track name') !== -1 ? headers.indexOf('track name') : 1;
+      const albumIdx = headers.indexOf('album name') !== -1 ? headers.indexOf('album name') : 2;
+      const artistIdx = headers.indexOf('artist name(s)') !== -1 ? headers.indexOf('artist name(s)') : 3;
+      const yearIdx = headers.indexOf('release date');
+
+      const tracks = [];
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (r[artistIdx]) {
+          const title = r[trackIdx] || "Без названия";
+          const album = albumIdx !== -1 && r[albumIdx] ? r[albumIdx] : '';
+          const year = yearIdx !== -1 && r[yearIdx] ? r[yearIdx].substring(0, 4) : '';
+          const artists = splitArtists(r[artistIdx]);
+
+          tracks.push({ title, album, artists, year });
+        }
+      }
+      return tracks;
+    }
+
+    function analyzeManualList() {
+      const rawText = document.getElementById('rawArtistsInput').value;
+      if (!rawText.trim()) return alert("Введи треки или артистов!");
+
+      if (rawText.toLowerCase().includes('artist name') || rawText.includes(',')) {
+        const tracks = parseCSVTracksRobust(rawText);
+        if (tracks.length > 0) return analyzePlaylist(tracks);
+      }
+
+      const lines = rawText.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      const tracks = lines.map(line => {
+        const parts = splitArtists(line);
+        return { title: line, artists: parts.length ? parts : [line], album: '', year: '' };
+      });
+      analyzePlaylist(tracks);
+    }
+
+    function analyzePlaylist(tracks) {
+      const matchedMap = {};
+      const indieMap = {};
+      let topSongsCount = 0;
+
+      tracks.forEach(track => {
+        let trackHasTop = false;
+
+        track.artists.forEach(artistName => {
+          const cleanName = clean(artistName);
+          if (!cleanName) return;
+
+          const topIndex = TOP_500_ARTISTS.findIndex(t => clean(t) === cleanName);
+
+          if (topIndex !== -1) {
+            const canonicalName = TOP_500_ARTISTS[topIndex];
+            const rank = topIndex + 1;
+            if (!matchedMap[canonicalName]) {
+              matchedMap[canonicalName] = { name: canonicalName, rank, tracks: [] };
+            }
+            matchedMap[canonicalName].tracks.push(track);
+            trackHasTop = true;
+          } else {
+            if (!indieMap[artistName]) {
+              indieMap[artistName] = { name: artistName, tracks: [] };
+            }
+            indieMap[artistName].tracks.push(track);
+          }
+        });
+
+        if (trackHasTop) topSongsCount++;
+      });
+
+      currentAnalysisData = { matched: matchedMap, indie: indieMap };
+
+      rawMatchedList = Object.values(matchedMap).sort((a, b) => b.tracks.length - a.tracks.length || a.rank - b.rank);
+      rawIndieList = Object.values(indieMap).sort((a, b) => b.tracks.length - a.tracks.length);
+
+      // Сброс поиска
+      const searchM = document.getElementById('searchMatchedInput');
+      const searchI = document.getElementById('searchIndieInput');
+      if (searchM) searchM.value = '';
+      if (searchI) searchI.value = '';
+
+      displayResults(rawMatchedList, rawIndieList, tracks.length, topSongsCount);
+    }
+
+    function displayResults(matched, indie, totalTracks, topSongsCount) {
+      document.getElementById('results').classList.remove('hidden');
+
+      const percent = totalTracks > 0 ? Math.round((topSongsCount / totalTracks) * 100) : 0;
+      
+      document.getElementById('matchedCount').innerText = matched.length;
+      document.getElementById('topTracksStats').innerText = topSongsCount;
+      document.getElementById('topTracksSub').innerText = `${percent}% плейлиста (${totalTracks} всего)`;
+      document.getElementById('indieCount').innerText = indie.length;
+
+      if (matched.length > 0) {
+        const bestRanked = [...matched].sort((a, b) => a.rank - b.rank)[0];
+        document.getElementById('highestRank').innerText = `#${bestRanked.rank}`;
+        document.getElementById('highestName').innerText = bestRanked.name;
+      } else {
+        document.getElementById('highestRank').innerText = `#—`;
+        document.getElementById('highestName').innerText = "Никого";
+      }
+
+      const vEmoji = document.getElementById('verdictEmoji');
+      const vTitle = document.getElementById('verdictTitle');
+      const vDesc = document.getElementById('verdictDesc');
+
+      if (percent >= 60) {
+        vEmoji.innerText = "📻";
+        vTitle.innerText = "Мейнстрим-машина";
+        vDesc.innerText = `Более ${percent}% твоих треков принадлежат мировым чарт-топперам.`;
+      } else if (percent >= 25) {
+        vEmoji.innerText = "⚖️";
+        vTitle.innerText = "Здоровый баланс";
+        vDesc.innerText = "У тебя отличное сочетание мировых суперзвезд и независимой музыки.";
+      } else {
+        vEmoji.innerText = "🕶️";
+        vTitle.innerText = "Андеграунд-эстет";
+        vDesc.innerText = `Всего ${percent}% песен из топ-500. Твой вкус уникален и далёк от чартов.`;
+      }
+
+      renderMatchedList(matched);
+      renderIndieList(indie);
+
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderMatchedList(list) {
+      const matchedContainer = document.getElementById('matchedList');
+      matchedContainer.innerHTML = list.map(a => `
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', true)" class="group flex items-center gap-2 bg-[#181818] hover:bg-[#222222] border border-[#282828] hover:border-[#1ed760] px-3 py-2 rounded-xl text-xs transition text-left cursor-pointer">
+          <span class="text-gray-400 group-hover:text-[#1ed760] font-bold">#${a.rank}</span>
+          <span class="font-semibold text-white">${a.name}</span>
+          <span class="bg-[#1ed760]/10 text-[#1ed760] font-bold px-2 py-0.5 rounded-md text-[11px] ml-1">
+            ${a.tracks.length} ${getSongWord(a.tracks.length)}
+          </span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 group-hover:text-white transition ml-1"></i>
+        </button>
+      `).join('') || '<p class="text-xs text-gray-500 py-2">Ничего не найдено</p>';
+      document.getElementById('matchedBadge').innerText = list.length;
+    }
+
+    function renderIndieList(list) {
+      const indieContainer = document.getElementById('indieList');
+      indieContainer.innerHTML = list.map(a => `
+        <button onclick="openArtistModal('${escapeHtml(a.name)}', false)" class="flex items-center gap-2 bg-[#181818] hover:bg-[#222222] border border-[#282828] hover:border-purple-400 px-3 py-1.5 rounded-lg text-xs text-gray-300 transition text-left cursor-pointer">
+          <span class="truncate max-w-[150px]">${a.name}</span>
+          ${a.tracks.length > 1 ? `<span class="text-purple-400 text-[10px] font-bold">${a.tracks.length}</span>` : ''}
+        </button>
+      `).join('') || '<p class="text-xs text-gray-500 py-2">Ничего не найдено</p>';
+      document.getElementById('indieBadge').innerText = list.length;
+    }
+
+    function filterMatchedArtists() {
+      const q = clean(document.getElementById('searchMatchedInput').value);
+      const filtered = rawMatchedList.filter(a => clean(a.name).includes(q));
+      renderMatchedList(filtered);
+    }
+
+    function filterIndieArtists() {
+      const q = clean(document.getElementById('searchIndieInput').value);
+      const filtered = rawIndieList.filter(a => clean(a.name).includes(q));
+      renderIndieList(filtered);
+    }
+
+    function shareResult() {
+      if (!currentAnalysisData.matched) return;
+
+      const matchedCount = document.getElementById('matchedCount').innerText;
+      const percentStr = document.getElementById('topTracksSub').innerText;
+      const highestName = document.getElementById('highestName').innerText;
+      const highestRank = document.getElementById('highestRank').innerText;
+      const verdictTitle = document.getElementById('verdictTitle').innerText;
+      const verdictEmoji = document.getElementById('verdictEmoji').innerText;
+
+      const shareText = `${verdictEmoji} Мой Spotify Top 500 Radar:\n` +
+        `• Вердикт: ${verdictTitle}\n` +
+        `• Артистов в Топ-500: ${matchedCount}\n` +
+        `• Самый популярный: ${highestName} (${highestRank})\n` +
+        `• Совпадение с чартами: ${percentStr}\n\n` +
+        `Проверь свой плейлист на Spotify Top 500 Radar! 🎧`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(() => {
+          showToast("Результат скопирован в буфер обмена!");
+        }).catch(() => {
+          fallbackCopyText(shareText);
+        });
+      } else {
+        fallbackCopyText(shareText);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast("Результат скопирован в буфер обмена!");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    function openArtistModal(artistName, isTop) {
+      const data = isTop ? currentAnalysisData.matched[artistName] : currentAnalysisData.indie[artistName];
+      if (!data) return;
+
+      document.getElementById('modalArtistName').innerText = data.name;
+      const rankBadge = document.getElementById('modalRankBadge');
+      if (isTop) {
+        rankBadge.innerText = `#${data.rank} в мировом топе`;
+        rankBadge.className = "text-xs font-bold px-2.5 py-1 bg-[#1ed760]/10 text-[#1ed760] rounded-lg";
+      } else {
+        rankBadge.innerText = "Андеграунд";
+        rankBadge.className = "text-xs font-bold px-2.5 py-1 bg-purple-500/10 text-purple-400 rounded-lg";
+      }
+
+      document.getElementById('modalTrackCount').innerText = data.tracks.length;
+
+      // Выводим песни с альбомом и годом
+      const trackListContainer = document.getElementById('modalTrackList');
+      trackListContainer.innerHTML = data.tracks.map((t, idx) => {
+        const meta = [t.album, t.year].filter(Boolean).join(' • ');
+
+        return `
+          <div class="flex items-center justify-between p-3 bg-[#181818] border border-[#242424] rounded-xl text-xs">
+            <div class="truncate mr-3">
+              <div class="font-semibold text-white truncate">${t.title}</div>
+              ${meta ? `<div class="text-gray-500 text-[11px] truncate mt-0.5">${meta}</div>` : ''}
+            </div>
+            <span class="text-gray-500 font-mono text-[11px] shrink-0">#${idx + 1}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('artistModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('artistModal').classList.add('hidden');
+    }
+
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('artistModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'artistModal') closeModal();
+    });
+
+    function escapeHtml(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function getSongWord(count) {
+      const mod10 = count % 10;
+      const mod100 = count % 100;
+      if (mod100 >= 11 && mod100 <= 19) return 'песен';
+      if (mod10 === 1) return 'песня';
+      if (mod10 >= 2 && mod10 <= 4) return 'песни';
+      return 'песен';
+    }
+  </script>
+</body>
+</html>
