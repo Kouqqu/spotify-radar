@@ -42,6 +42,7 @@ jobs:
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../SpotiRadar.apk
           cp app/build/outputs/apk/debug/app-debug.apk ../SpotifyRadar.apk
 
       - name: Upload Build Log
@@ -66,13 +67,16 @@ jobs:
         with:
           make_latest: true
           tag_name: v1.2.0-${{ github.run_number }}
-          name: "Spotify Radar (v1.2.${{ github.run_number }})"
+          name: "SpotiRadar (v1.2.${{ github.run_number }})"
           body: |
-            ### Обновление v1.2.${{ github.run_number }}
+            ### 🚀 SpotiRadar v1.2.${{ github.run_number }}
             
-            - Переименован файл установки в красивый SpotifyRadar.apk
-            - Прямой переход в Spotify для любого артиста и трека в один клик
-            - Интеграция официального логотипа Spotify
-          files: SpotifyRadar.apk
+            - Ребрендинг сервиса в SpotiRadar
+            - Новый авторский логотип SpotiRadar
+            - Улучшенная плавная работа и генерация карточек
+            - Доступны файлы SpotiRadar.apk и SpotifyRadar.apk
+          files: |
+            SpotiRadar.apk
+            SpotifyRadar.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

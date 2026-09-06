@@ -1,4 +1,4 @@
-# Spotify Top 500 Radar
+# SpotiRadar
 
 [🇷🇺 Русский](#-русский) • [🇬🇧 English](#-english)
 

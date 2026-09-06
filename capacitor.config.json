@@ -1,6 +1,6 @@
 {
   "appId": "com.spotifyradar.app",
-  "appName": "Spotify Radar",
+  "appName": "SpotiRadar",
   "webDir": "www",
   "bundledWebRuntime": false
 }

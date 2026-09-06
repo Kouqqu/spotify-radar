@@ -98,7 +98,7 @@ object StoryCardGenerator {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             letterSpacing = 0.1f
         }
-        canvas.drawText("SPOTIFY TOP-500 RADAR", 80f, 140f, brandPaint)
+        canvas.drawText("SPOTIRADAR", 80f, 140f, brandPaint)
 
         val subBrandPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.parseColor("#888888")
@@ -266,19 +266,19 @@ object StoryCardGenerator {
             textSize = 24f
             textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("Spotify Top 500 Radar • kouqqu.github.io/spotify-radar", width / 2f, 1820f, footerPaint)
+        canvas.drawText("SpotiRadar • kouqqu.github.io/spotify-radar", width / 2f, 1820f, footerPaint)
 
         return bitmap
     }
 
     fun saveToGallery(context: Context, bitmap: Bitmap): Uri? {
-        val filename = "spotify_radar_${System.currentTimeMillis()}.png"
+        val filename = "spotiradar_${System.currentTimeMillis()}.png"
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/SpotifyRadar")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/SpotiRadar")
                 }
                 val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 if (uri != null) {
@@ -289,7 +289,7 @@ object StoryCardGenerator {
                 uri
             } else {
                 val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                val appDir = File(imagesDir, "SpotifyRadar")
+                val appDir = File(imagesDir, "SpotiRadar")
                 appDir.mkdirs()
                 val file = File(appDir, filename)
                 FileOutputStream(file).use { stream ->
@@ -307,7 +307,7 @@ object StoryCardGenerator {
         try {
             val cachePath = File(context.cacheDir, "images")
             cachePath.mkdirs()
-            val file = File(cachePath, "spotify_radar_story.png")
+            val file = File(cachePath, "spotiradar_story.png")
             FileOutputStream(file).use { stream ->
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             }

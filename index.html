@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#121212">
-  <title>Spotify Top 500 Radar</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎧</text></svg>">
+  <title>SpotiRadar</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -99,8 +99,10 @@
     <!-- Header -->
     <header class="text-center my-4 sm:my-6 flex flex-col items-center">
       <div class="flex items-center gap-3 mb-1">
-        <i id="headerSpotifyLogo" onclick="handleSecretLogoClick()" class="fa-brands fa-spotify text-4xl text-[#1ed760] cursor-pointer select-none"></i>
-        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Top 500 Radar</h1>
+        <svg id="headerSpotifyLogo" onclick="handleSecretLogoClick()" class="w-10 h-10 cursor-pointer select-none transition-transform hover:scale-105 active:scale-95 shrink-0" viewBox="0 0 168 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M83.7422 0.00390625C129.997 0.00400521 167.487 37.4955 167.487 83.7412C167.487 129.992 129.997 167.482 83.7432 167.482C37.4942 167.482 0 129.992 0 83.7412C0.000226819 37.4924 37.4943 0 83.7432 0L83.7422 0.00390625ZM139.247 59.7227C108.173 41.2757 82.1364 22.9885 51.2471 24.2227C46.9227 24.3963 43.5614 28.0399 43.7314 32.3623C43.902 36.6827 47.5484 40.0465 51.8691 39.875C75.5202 38.9316 99.6361 53.8028 123.455 68.3027C123.067 69.2933 122.739 70.3396 122.477 71.4316C95.7645 65.5292 64.4863 67.754 36.7812 64.2676C33.2056 63.8216 29.9439 66.3526 29.4863 69.9297C29.0386 73.5045 31.576 76.7678 35.1543 77.2227C60.5123 80.4107 97.4397 78.7609 122.718 84.9375C123.114 86.3466 123.623 87.6704 124.228 88.8857C101.118 94.491 69.4782 97.312 39.0801 104.26C36.2641 104.9 34.5113 107.7 35.1543 110.51C35.7944 113.32 38.5944 115.079 41.4033 114.439C72.2472 112.722 114.001 107.05 134.597 96.7227C134.6 96.7219 134.603 96.7204 134.606 96.7197C134.653 96.7205 134.7 96.7227 134.747 96.7227C141.927 96.7227 147.747 88.2161 147.747 77.7227C147.747 69.6752 144.324 62.797 139.489 60.0273C139.408 59.9245 139.326 59.8238 139.247 59.7227Z" fill="#1ED760"/>
+        </svg>
+        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">SpotiRadar</h1>
       </div>
       <p class="text-gray-400 text-xs sm:text-sm max-w-sm">
         Сколько твоих любимых артистов входят в мировой топ Spotify
@@ -302,7 +304,7 @@
 
     <!-- Version info -->
     <footer class="mt-8 mb-6 text-center text-[11px] text-gray-500 font-mono tracking-wider select-none">
-      Spotify Radar
+      SpotiRadar
     </footer>
 
   </div>
@@ -344,10 +346,10 @@
       <button onclick="closeStoryModal()" class="absolute -top-10 right-0 text-gray-400 hover:text-white text-xl p-2">✕</button>
       
       <!-- Generated Image on screen -->
-      <img id="storyPreviewImg" alt="Spotify Radar Card" class="w-full rounded-2xl shadow-2xl border border-[#333] mb-4 max-h-[75vh] object-contain">
+      <img id="storyPreviewImg" alt="SpotiRadar Card" class="w-full rounded-2xl shadow-2xl border border-[#333] mb-4 max-h-[75vh] object-contain">
       
       <div class="w-full flex gap-2">
-        <a id="downloadStoryBtn" download="spotify-radar-story.png" class="sp-btn-green flex-1 py-3 rounded-xl text-xs font-bold text-center block sp-btn-press">
+        <a id="downloadStoryBtn" download="spotiradar-story.png" class="sp-btn-green flex-1 py-3 rounded-xl text-xs font-bold text-center block sp-btn-press">
           <i class="fa-solid fa-download mr-1"></i> Сохранить картинку
         </a>
         <button onclick="shareStoryImage()" class="bg-[#282828] hover:bg-[#333] text-white text-xs font-bold px-4 py-3 rounded-xl sp-btn-press">
@@ -1072,7 +1074,7 @@
       const verdictTitle = document.getElementById('verdictTitle').innerText;
       const verdictEmoji = document.getElementById('verdictEmoji').innerText;
 
-      return `${verdictEmoji} Мой Spotify Top 500 Radar:\n` +
+      return `${verdictEmoji} Мой результат в SpotiRadar:\n` +
         `• Вердикт: ${verdictTitle}\n` +
         `• В Топ-500: ${matchedCount} артистов\n` +
         `• Топ-1: ${highestName} (${highestRank})\n` +
@@ -1128,7 +1130,7 @@
       if (navigator.share) {
         try {
           await navigator.share({
-            title: 'Spotify Top 500 Radar',
+            title: 'SpotiRadar',
             text: getShareSummaryText(),
             url: 'https://kouqqu.github.io/spotify-radar/'
           });
@@ -1189,7 +1191,7 @@
       ctx.fillStyle = '#1ed760';
       ctx.font = 'bold 40px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('SPOTIFY TOP 500 RADAR', 540, 240);
+      ctx.fillText('SPOTIRADAR', 540, 240);
 
       // Вердикт
       const vEmoji = document.getElementById('verdictEmoji').innerText || '🎧';
@@ -1273,7 +1275,7 @@
       ctx.fillStyle = '#666666';
       ctx.font = '28px -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Spotify Top 500 Radar • kouqqu.github.io/spotify-radar', 540, 1720);
+      ctx.fillText('SpotiRadar • kouqqu.github.io/spotify-radar', 540, 1720);
 
       // Синхронный экспорт картинки
       const dataUrl = canvas.toDataURL('image/png');
@@ -1293,12 +1295,12 @@
 
     async function shareStoryImage() {
       if (currentStoryBlob && navigator.canShare) {
-        const file = new File([currentStoryBlob], 'spotify-radar-story.png', { type: 'image/png' });
+        const file = new File([currentStoryBlob], 'spotiradar-story.png', { type: 'image/png' });
         if (navigator.canShare({ files: [file] })) {
           try {
             await navigator.share({
               files: [file],
-              title: 'Spotify Top 500 Radar'
+              title: 'SpotiRadar'
             });
             return;
           } catch (e) {}

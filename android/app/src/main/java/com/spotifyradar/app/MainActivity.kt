@@ -207,7 +207,7 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_spotify),
+                            painter = painterResource(id = R.drawable.ic_spotiradar),
                             contentDescription = "Spotify Logo",
                             tint = Color.Unspecified,
                             modifier = Modifier
@@ -238,7 +238,7 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Spotify Radar",
+                            text = "SpotiRadar",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 19.sp
@@ -962,7 +962,7 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                         Button(
                             onClick = {
                                 haptic()
-                                val shareText = "${result.verdictEmoji} Мой Spotify Top 500 Radar:\n" +
+                                val shareText = "${result.verdictEmoji} Мой результат в SpotiRadar:\n" +
                                         "🏆 Вердикт: ${result.verdictTitle}\n" +
                                         "📊 В Топ-500: ${result.matchedCount} артистов\n" +
                                         "👑 Топ-1: ${result.highestArtist?.name ?: "—"} (#${result.highestArtist?.rank ?: "—"})\n" +
@@ -1140,7 +1140,7 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Spotify Radar • v1.2.${AppVersion.CURRENT_RUN_NUMBER}",
+                        text = "SpotiRadar • v1.2.${AppVersion.CURRENT_RUN_NUMBER}",
                         color = Color(0xFF888888),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
