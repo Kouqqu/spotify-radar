@@ -28,7 +28,7 @@ data class SpotifyPlaylist(
 object SpotifyAuthManager {
     const val CLIENT_ID = "10a760e2d5df4b3f81303d4bdd74ddff"
     const val REDIRECT_URI = "spotifyradar://callback"
-    const val SCOPES = "playlist-read-private playlist-read-collaborative user-read-private user-read-email"
+    const val SCOPES = "playlist-read-private playlist-read-collaborative user-library-read user-read-private user-read-email"
 
     private const val PREFS = "spotify_radar_auth"
     private const val KEY_TOKEN = "access_token"
@@ -159,6 +159,45 @@ object SpotifyAuthManager {
             e.printStackTrace()
         }
         list
+    }
+
+    suspend fun fetchSavedTracks(token: String): List<Pair<String, String>> = withContext(Dispatchers.IO) {
+        val tracks = mutableListOf<Pair<String, String>>()
+        try {
+            var urlStr: String? = "https://api.spotify.com/v1/me/tracks?limit=50"
+            while (urlStr != null && tracks.size < 500) {
+                val url = URL(urlStr)
+                val conn = url.openConnection() as HttpURLConnection
+                conn.setRequestProperty("Authorization", "Bearer $token")
+                if (conn.responseCode == 200) {
+                    val json = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+                    val items = json.optJSONArray("items")
+                    if (items != null) {
+                        for (i in 0 until items.length()) {
+                            val item = items.optJSONObject(i) ?: continue
+                            val trackObj = item.optJSONObject("track") ?: continue
+                            val title = trackObj.optString("name", "Без названия")
+                            val artistsArr = trackObj.optJSONArray("artists")
+                            val artistNames = mutableListOf<String>()
+                            if (artistsArr != null) {
+                                for (j in 0 until artistsArr.length()) {
+                                    val art = artistsArr.getJSONObject(j)
+                                    artistNames.add(art.optString("name"))
+                                }
+                            }
+                            val artistLine = artistNames.joinToString(", ")
+                            tracks.add(Pair(title, artistLine))
+                        }
+                    }
+                    urlStr = if (json.has("next") && !json.isNull("next")) json.getString("next") else null
+                } else {
+                    break
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        tracks
     }
 
     suspend fun fetchPlaylistTracks(token: String, playlistId: String): List<Pair<String, String>> = withContext(Dispatchers.IO) {

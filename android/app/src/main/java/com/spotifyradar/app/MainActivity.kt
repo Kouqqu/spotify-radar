@@ -460,6 +460,93 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                             )
 
+                            // Saved tracks button (always available)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFF1B1824))
+                                    .border(1.dp, Color(0xFF6A3CE2), RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        if (!isAnalyzingPlaylist) {
+                                            haptic()
+                                            coroutineScope.launch {
+                                                isAnalyzingPlaylist = true
+                                                Toast.makeText(context, "Загрузка любимых треков...", Toast.LENGTH_SHORT).show()
+                                                val tracks = SpotifyAuthManager.fetchSavedTracks(spotifyToken!!)
+                                                if (tracks.isNotEmpty()) {
+                                                    analysisResult = RadarAnalyzer.analyze(tracks)
+                                                    Toast.makeText(context, "Готово: ${tracks.size} любимых треков!", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    Toast.makeText(context, "В любимых пока нет треков", Toast.LENGTH_SHORT).show()
+                                                }
+                                                isAnalyzingPlaylist = false
+                                            }
+                                        }
+                                    }
+                                    .padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color(0xFF532B88)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column {
+                                        Text(
+                                            text = "Любимые треки",
+                                            color = Color.White,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "Твои сохранённые песни",
+                                            color = SpotifyTextSecondary,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+
+                                Button(
+                                    onClick = {
+                                        if (!isAnalyzingPlaylist) {
+                                            haptic()
+                                            coroutineScope.launch {
+                                                isAnalyzingPlaylist = true
+                                                Toast.makeText(context, "Загрузка любимых треков...", Toast.LENGTH_SHORT).show()
+                                                val tracks = SpotifyAuthManager.fetchSavedTracks(spotifyToken!!)
+                                                if (tracks.isNotEmpty()) {
+                                                    analysisResult = RadarAnalyzer.analyze(tracks)
+                                                    Toast.makeText(context, "Готово: ${tracks.size} любимых треков!", Toast.LENGTH_SHORT).show()
+                                                } else {
+                                                    Toast.makeText(context, "В любимых пока нет треков", Toast.LENGTH_SHORT).show()
+                                                }
+                                                isAnalyzingPlaylist = false
+                                            }
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Анализ", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
                             if (isPlaylistsLoading) {
                                 CircularProgressIndicator(
                                     color = SpotifyGreen,
@@ -467,9 +554,10 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                                 )
                             } else if (spotifyPlaylists.isEmpty()) {
                                 Text(
-                                    text = "Плейлисты не найдены",
+                                    text = "Плейлисты не найдены или пока не созданы",
                                     color = Color.Gray,
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             } else {
                                 Column(

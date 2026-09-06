@@ -485,7 +485,7 @@
 
     const SPOTIFY_CLIENT_ID = '10a760e2d5df4b3f81303d4bdd74ddff';
     const SPOTIFY_REDIRECT_URI = window.location.origin + window.location.pathname;
-    const SPOTIFY_SCOPES = 'playlist-read-private playlist-read-collaborative user-read-private user-read-email';
+    const SPOTIFY_SCOPES = 'playlist-read-private playlist-read-collaborative user-library-read user-read-private user-read-email';
 
     let spotifyAccessToken = null;
 
@@ -674,7 +674,24 @@
           return;
         }
 
-        container.innerHTML = playlists.map(p => {
+        const savedTracksCard = `
+          <div onclick="analyzeSpotifySavedTracks()" class="sp-btn-press p-2.5 rounded-xl bg-[#181818] hover:bg-[#222] border border-[#1ed760]/40 flex items-center justify-between cursor-pointer transition mb-2">
+            <div class="flex items-center gap-3 truncate mr-2">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[#450af5] to-[#8e8ee5] shrink-0 overflow-hidden flex items-center justify-center text-white">
+                <i class="fa-solid fa-heart text-sm"></i>
+              </div>
+              <div class="truncate">
+                <div class="text-xs font-bold text-white truncate">Любимые треки</div>
+                <div class="text-[11px] text-gray-400">Сохранённые песни</div>
+              </div>
+            </div>
+            <button class="sp-btn-green text-[11px] px-3 py-1.5 rounded-full font-bold shrink-0">
+              Анализ
+            </button>
+          </div>
+        `;
+
+        container.innerHTML = savedTracksCard + playlists.map(p => {
           const imgUrl = (p.images && p.images.length > 0 && p.images[0]?.url) ? p.images[0].url : '';
           const safeName = (p.name || 'Без названия').replace(/'/g, "\\'").replace(/"/g, '&quot;');
           const trackCount = (p.tracks && typeof p.tracks.total === 'number') ? p.tracks.total : (p.items?.length || 0);
@@ -705,6 +722,46 @@
             <button onclick="loadUserPlaylists()" class="px-3 py-1 bg-[#282828] hover:bg-[#333] text-white rounded text-xs">Повторить</button>
           </div>
         `;
+      }
+    }
+
+        async function analyzeSpotifySavedTracks() {
+      triggerHaptic(20);
+      showToast('Загружаем сохранённые треки...');
+
+      try {
+        let tracks = [];
+        let url = 'https://api.spotify.com/v1/me/tracks?limit=50';
+
+        while (url && tracks.length < 500) {
+          const res = await fetch(url, {
+            headers: { 'Authorization': `Bearer ${spotifyAccessToken}` }
+          });
+          const data = await res.json();
+          if (data.items) {
+            data.items.forEach(item => {
+              if (item.track && item.track.artists) {
+                const title = item.track.name || "Без названия";
+                const album = item.track.album ? item.track.album.name : '';
+                const year = item.track.album && item.track.album.release_date ? item.track.album.release_date.substring(0, 4) : '';
+                const artists = item.track.artists.map(a => a.name);
+                tracks.push({ title, album, artists, year });
+              }
+            });
+          }
+          url = data.next;
+        }
+
+        if (tracks.length > 0) {
+          showToast(`Проанализировано ${tracks.length} треков!`);
+          analyzePlaylist(tracks);
+          document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          showToast('В любимых пока нет треков');
+        }
+      } catch (e) {
+        console.error(e);
+        showToast('Ошибка загрузки сохранённых треков');
       }
     }
 
