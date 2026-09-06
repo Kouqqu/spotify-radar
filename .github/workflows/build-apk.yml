@@ -43,7 +43,6 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk ../SpotiRadar.apk
-          cp app/build/outputs/apk/debug/app-debug.apk ../SpotifyRadar.apk
 
       - name: Upload Build Log
         if: always()
@@ -56,8 +55,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: SpotifyRadar-Native-APK
-          path: SpotifyRadar.apk
+          name: SpotiRadar-APK
+          path: SpotiRadar.apk
           retention-days: 30
 
       - name: Create GitHub Release
@@ -71,12 +70,9 @@ jobs:
           body: |
             ### 🚀 SpotiRadar v1.2.${{ github.run_number }}
             
-            - Ребрендинг сервиса в SpotiRadar
-            - Новый авторский логотип SpotiRadar
+            - Официальный релиз SpotiRadar
+            - Новый авторский логотип и фирменная иконка приложения
             - Улучшенная плавная работа и генерация карточек
-            - Доступны файлы SpotiRadar.apk и SpotifyRadar.apk
-          files: |
-            SpotiRadar.apk
-            SpotifyRadar.apk
+          files: SpotiRadar.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

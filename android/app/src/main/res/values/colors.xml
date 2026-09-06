@@ -6,4 +6,5 @@
     <color name="spotify_green">#1ED760</color>
     <color name="spotify_white">#FFFFFF</color>
     <color name="spotify_gray">#B3B3B3</color>
+    <color name="ic_launcher_background">#121212</color>
 </resources>
