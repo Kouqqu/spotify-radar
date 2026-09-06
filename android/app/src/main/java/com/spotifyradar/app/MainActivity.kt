@@ -47,10 +47,28 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 class MainActivity : ComponentActivity() {
+    private val authCodeFlow = kotlinx.coroutines.flow.MutableSharedFlow<String>(replay = 1)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleAuthIntent(intent)
         setContent {
-            SpotifyRadarApp()
+            SpotifyRadarApp(authCodeFlow)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleAuthIntent(intent)
+    }
+
+    private fun handleAuthIntent(intent: Intent?) {
+        val uri = intent?.data
+        if (uri != null && uri.scheme == "spotifyradar" && uri.host == "callback") {
+            val code = uri.getQueryParameter("code")
+            if (code != null) {
+                authCodeFlow.tryEmit(code)
+            }
         }
     }
 }
@@ -64,12 +82,17 @@ val SpotifyTextSecondary = Color(0xFFB3B3B3)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SpotifyRadarApp() {
+fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = null) {
     val context = LocalContext.current
     val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
 
     var selectedTab by remember { mutableStateOf(0) }
+    var spotifyToken by remember { mutableStateOf<String?>(SpotifyAuthManager.getSavedToken(context)) }
+    var spotifyUser by remember { mutableStateOf<SpotifyUser?>(null) }
+    var spotifyPlaylists by remember { mutableStateOf<List<SpotifyPlaylist>>(emptyList()) }
+    var isPlaylistsLoading by remember { mutableStateOf(false) }
+    var isAnalyzingPlaylist by remember { mutableStateOf(false) }
     var textInput by remember { mutableStateOf("") }
     var analysisResult by remember { mutableStateOf<RadarAnalyzer.AnalysisResult?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -83,6 +106,43 @@ fun SpotifyRadarApp() {
 
     fun haptic() {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+    }
+
+    // Handle Spotify Auth Code
+    LaunchedEffect(authCodeFlow) {
+        authCodeFlow?.collect { code ->
+            Toast.makeText(context, "Вход через Spotify...", Toast.LENGTH_SHORT).show()
+            val token = SpotifyAuthManager.exchangeCodeForToken(context, code)
+            if (token != null) {
+                spotifyToken = token
+                Toast.makeText(context, "Успешный вход в Spotify!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Ошибка получения токена", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // Load Spotify User and Playlists when token is present
+    LaunchedEffect(spotifyToken) {
+        val token = spotifyToken
+        if (token != null) {
+            isPlaylistsLoading = true
+            val user = SpotifyAuthManager.fetchCurrentUser(token)
+            if (user == null) {
+                // Token might be expired
+                SpotifyAuthManager.logout(context)
+                spotifyToken = null
+                isPlaylistsLoading = false
+            } else {
+                spotifyUser = user
+                val playlists = SpotifyAuthManager.fetchUserPlaylists(token)
+                spotifyPlaylists = playlists
+                isPlaylistsLoading = false
+            }
+        } else {
+            spotifyUser = null
+            spotifyPlaylists = emptyList()
+        }
     }
 
     // Auto-check for GitHub updates on app launch
@@ -214,7 +274,7 @@ fun SpotifyRadarApp() {
                 )
             }
 
-            // Animated Sliding Tabs Selector
+            // Animated Sliding Tabs Selector (3 Tabs: Spotify, CSV, Text)
             item {
                 BoxWithConstraints(
                     modifier = Modifier
@@ -223,9 +283,9 @@ fun SpotifyRadarApp() {
                         .border(1.dp, SpotifyBorder, RoundedCornerShape(14.dp))
                         .padding(4.dp)
                 ) {
-                    val tabWidth = maxWidth / 2
+                    val tabWidth = maxWidth / 3
                     val indicatorOffset by animateDpAsState(
-                        targetValue = if (selectedTab == 0) 0.dp else tabWidth,
+                        targetValue = tabWidth * selectedTab,
                         animationSpec = spring(dampingRatio = 0.8f, stiffness = 450f),
                         label = "tabIndicatorOffset"
                     )
@@ -243,8 +303,8 @@ fun SpotifyRadarApp() {
                     // Tab buttons
                     Row(modifier = Modifier.fillMaxWidth()) {
                         TabButton(
-                            title = "Файл .CSV",
-                            icon = Icons.Default.Add,
+                            title = "Spotify",
+                            icon = Icons.Default.AccountCircle,
                             isSelected = selectedTab == 0,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -252,20 +312,236 @@ fun SpotifyRadarApp() {
                             selectedTab = 0
                         }
                         TabButton(
-                            title = "Текстом",
-                            icon = Icons.Default.Edit,
+                            title = "Файл",
+                            icon = Icons.Default.Add,
                             isSelected = selectedTab == 1,
                             modifier = Modifier.weight(1f)
                         ) {
                             haptic()
                             selectedTab = 1
                         }
+                        TabButton(
+                            title = "Текст",
+                            icon = Icons.Default.Edit,
+                            isSelected = selectedTab == 2,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            haptic()
+                            selectedTab = 2
+                        }
                     }
                 }
             }
 
-            // Tab 0: CSV Upload Card
+                        // Tab 0: Spotify Connect & Playlists Card
             if (selectedTab == 0) {
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(SpotifyCard, RoundedCornerShape(16.dp))
+                            .border(1.dp, SpotifyBorder, RoundedCornerShape(16.dp))
+                            .padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (spotifyToken == null) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_spotify),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(54.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Подключи свой Spotify",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Анализируй свои плейлисты напрямую без скачивания файлов",
+                                color = SpotifyTextSecondary,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            Button(
+                                onClick = {
+                                    haptic()
+                                    SpotifyAuthManager.startAuth(context)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(50.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_spotify),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Войти через Spotify", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            }
+                        } else {
+                            // Logged in user info
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF141414), RoundedCornerShape(12.dp))
+                                    .border(1.dp, Color(0xFF242424), RoundedCornerShape(12.dp))
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(SpotifyGreen),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = spotifyUser?.name?.take(1)?.uppercase() ?: "S",
+                                            color = Color.Black,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Column {
+                                        Text(
+                                            text = spotifyUser?.name ?: "Пользователь Spotify",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
+                                        Text(
+                                            text = "Подключен к Spotify",
+                                            color = SpotifyGreen,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+
+                                TextButton(
+                                    onClick = {
+                                        haptic()
+                                        SpotifyAuthManager.logout(context)
+                                        spotifyToken = null
+                                    }
+                                ) {
+                                    Text("Выйти", color = Color.Gray, fontSize = 12.sp)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "Выбери плейлист для анализа:",
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp,
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                            )
+
+                            if (isPlaylistsLoading) {
+                                CircularProgressIndicator(
+                                    color = SpotifyGreen,
+                                    modifier = Modifier.size(32.dp).padding(4.dp)
+                                )
+                            } else if (spotifyPlaylists.isEmpty()) {
+                                Text(
+                                    text = "Плейлисты не найдены",
+                                    color = Color.Gray,
+                                    fontSize = 12.sp
+                                )
+                            } else {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    spotifyPlaylists.take(15).forEach { playlist ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(Color(0xFF141414))
+                                                .border(1.dp, Color(0xFF242424), RoundedCornerShape(10.dp))
+                                                .clickable {
+                                                    if (!isAnalyzingPlaylist) {
+                                                        haptic()
+                                                        coroutineScope.launch {
+                                                            isAnalyzingPlaylist = true
+                                                            Toast.makeText(context, "Загрузка «${playlist.name}»...", Toast.LENGTH_SHORT).show()
+                                                            val tracks = SpotifyAuthManager.fetchPlaylistTracks(spotifyToken!!, playlist.id)
+                                                            if (tracks.isNotEmpty()) {
+                                                                analysisResult = RadarAnalyzer.analyze(tracks)
+                                                                Toast.makeText(context, "Готово: ${tracks.size} треков!", Toast.LENGTH_SHORT).show()
+                                                            } else {
+                                                                Toast.makeText(context, "В плейлисте нет треков", Toast.LENGTH_SHORT).show()
+                                                            }
+                                                            isAnalyzingPlaylist = false
+                                                        }
+                                                    }
+                                                }
+                                                .padding(10.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = playlist.name,
+                                                    color = Color.White,
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1
+                                                )
+                                                Text(
+                                                    text = "${playlist.trackCount} треков",
+                                                    color = SpotifyTextSecondary,
+                                                    fontSize = 11.sp
+                                                )
+                                            }
+
+                                            Button(
+                                                onClick = {
+                                                    if (!isAnalyzingPlaylist) {
+                                                        haptic()
+                                                        coroutineScope.launch {
+                                                            isAnalyzingPlaylist = true
+                                                            Toast.makeText(context, "Загрузка «${playlist.name}»...", Toast.LENGTH_SHORT).show()
+                                                            val tracks = SpotifyAuthManager.fetchPlaylistTracks(spotifyToken!!, playlist.id)
+                                                            if (tracks.isNotEmpty()) {
+                                                                analysisResult = RadarAnalyzer.analyze(tracks)
+                                                                Toast.makeText(context, "Готово: ${tracks.size} треков!", Toast.LENGTH_SHORT).show()
+                                                            } else {
+                                                                Toast.makeText(context, "В плейлисте нет треков", Toast.LENGTH_SHORT).show()
+                                                            }
+                                                            isAnalyzingPlaylist = false
+                                                        }
+                                                    }
+                                                },
+                                                colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
+                                                shape = RoundedCornerShape(8.dp),
+                                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                            ) {
+                                                Text("Анализ", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Tab 1: CSV Upload Card
+            if (selectedTab == 1) {
                 item {
                     Column(
                         modifier = Modifier

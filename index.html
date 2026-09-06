@@ -641,31 +641,53 @@
 
     async function loadUserPlaylists() {
       const container = document.getElementById('spotifyPlaylistsList');
-      container.innerHTML = '<div class="text-center py-6 text-xs text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Загрузка плейлистов...</div>';
+      container.innerHTML = '<div class="text-center py-6 text-xs text-gray-400 flex items-center justify-center gap-2"><i class="fa-solid fa-spinner fa-spin text-[#1ed760]"></i> <span>Загружаем твои плейлисты...</span></div>';
 
       try {
-        const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=30', {
+        const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
           headers: { 'Authorization': `Bearer ${spotifyAccessToken}` }
         });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          console.error("Spotify API error:", res.status, errData);
+          if (res.status === 401) {
+            logoutSpotify();
+            showToast('Сессия истекла, войдите снова');
+            return;
+          }
+          container.innerHTML = `
+            <div class="text-center py-4 px-3 rounded-xl bg-[#1f1616] border border-[#422020] text-xs text-red-300">
+              <div class="font-bold mb-1">Не удалось загрузить плейлисты (${res.status})</div>
+              <div class="text-[11px] text-gray-400 mb-2">${errData.error?.message || 'Проверьте доступ'}</div>
+              <button onclick="loadUserPlaylists()" class="px-3 py-1 bg-[#282828] hover:bg-[#333] text-white rounded text-xs">Повторить</button>
+            </div>
+          `;
+          return;
+        }
+
         const data = await res.json();
-        const playlists = data.items || [];
+        const playlists = (data.items || []).filter(p => p != null);
 
         if (playlists.length === 0) {
-          container.innerHTML = '<div class="text-center py-6 text-xs text-gray-500">Плейлисты не найдены</div>';
+          container.innerHTML = '<div class="text-center py-6 text-xs text-gray-400">В вашем аккаунте пока нет созданных плейлистов</div>';
           return;
         }
 
         container.innerHTML = playlists.map(p => {
-          const imgUrl = (p.images && p.images.length > 0) ? p.images[0].url : '';
+          const imgUrl = (p.images && p.images.length > 0 && p.images[0]?.url) ? p.images[0].url : '';
+          const safeName = (p.name || 'Без названия').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const trackCount = (p.tracks && typeof p.tracks.total === 'number') ? p.tracks.total : (p.items?.length || 0);
+
           return `
-            <div onclick="analyzeSpotifyPlaylist('${p.id}', '${p.name.replace(/'/g, "\'")}')" class="sp-btn-press p-2.5 rounded-xl bg-[#141414] hover:bg-[#1f1f1f] border border-[#242424] flex items-center justify-between cursor-pointer transition">
+            <div onclick="analyzeSpotifyPlaylist('${p.id}', '${safeName}')" class="sp-btn-press p-2.5 rounded-xl bg-[#141414] hover:bg-[#1f1f1f] border border-[#242424] hover:border-[#1ed760]/30 flex items-center justify-between cursor-pointer transition">
               <div class="flex items-center gap-3 truncate mr-2">
                 <div class="w-10 h-10 rounded-lg bg-[#242424] shrink-0 overflow-hidden flex items-center justify-center">
                   ${imgUrl ? `<img src="${imgUrl}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-music text-gray-500 text-xs"></i>`}
                 </div>
                 <div class="truncate">
-                  <div class="text-xs font-bold text-white truncate">${p.name}</div>
-                  <div class="text-[11px] text-gray-400">${p.tracks ? p.tracks.total : 0} треков</div>
+                  <div class="text-xs font-bold text-white truncate">${safeName}</div>
+                  <div class="text-[11px] text-gray-400">${trackCount} треков</div>
                 </div>
               </div>
               <button class="sp-btn-green text-[11px] px-3 py-1.5 rounded-full font-bold shrink-0">
@@ -675,7 +697,14 @@
           `;
         }).join('');
       } catch (e) {
-        container.innerHTML = '<div class="text-center py-6 text-xs text-red-400">Ошибка загрузки плейлистов</div>';
+        console.error("loadUserPlaylists exception:", e);
+        container.innerHTML = `
+          <div class="text-center py-4 px-3 rounded-xl bg-[#1f1616] border border-[#422020] text-xs text-red-300">
+            <div class="font-bold mb-1">Ошибка сети или запроса</div>
+            <div class="text-[11px] text-gray-400 mb-2">${e.message || e}</div>
+            <button onclick="loadUserPlaylists()" class="px-3 py-1 bg-[#282828] hover:bg-[#333] text-white rounded text-xs">Повторить</button>
+          </div>
+        `;
       }
     }
 

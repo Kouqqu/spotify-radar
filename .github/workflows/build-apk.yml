@@ -42,6 +42,7 @@ jobs:
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace --no-daemon > gradle_build.log 2>&1 || (echo "=== GRADLE LOG START ===" && tail -n 120 gradle_build.log && echo "=== GRADLE LOG END ===" && exit 1)
+          cp app/build/outputs/apk/debug/app-debug.apk ../SpotifyRadar.apk
 
       - name: Upload Build Log
         if: always()
@@ -55,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: SpotifyRadar-Native-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: SpotifyRadar.apk
           retention-days: 30
 
       - name: Create GitHub Release
@@ -69,8 +70,9 @@ jobs:
           body: |
             ### Обновление v1.2.${{ github.run_number }}
             
+            - Переименован файл установки в красивый SpotifyRadar.apk
             - Прямой переход в Spotify для любого артиста и трека в один клик
             - Интеграция официального логотипа Spotify
-          files: android/app/build/outputs/apk/debug/*.apk
+          files: SpotifyRadar.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
