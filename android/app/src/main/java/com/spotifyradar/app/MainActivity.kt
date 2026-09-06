@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -74,6 +75,8 @@ fun SpotifyRadarApp() {
     var searchQuery by remember { mutableStateOf("") }
     var isMatchedExpanded by remember { mutableStateOf(false) }
     var isIndieExpanded by remember { mutableStateOf(false) }
+    var matchedLimit by remember { mutableStateOf(25) }
+    var indieLimit by remember { mutableStateOf(25) }
     var selectedArtistForDetails by remember { mutableStateOf<Pair<String, List<String>>?>(null) }
     var storyBitmap by remember { mutableStateOf<Bitmap?>(null) }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
@@ -101,6 +104,12 @@ fun SpotifyRadarApp() {
         val list = result?.indieArtists ?: emptyList()
         if (searchQuery.isBlank()) list
         else list.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
+
+    // Reset pagination limits when search or result changes
+    LaunchedEffect(searchQuery, result) {
+        matchedLimit = 25
+        indieLimit = 25
     }
 
     // CSV File Picker launcher
@@ -351,12 +360,16 @@ fun SpotifyRadarApp() {
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
+                            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
                             placeholder = {
                                 Text("The Weeknd, Billie Eilish, Lana Del Rey...", color = Color.DarkGray, fontSize = 13.sp)
                             },
                             modifier = Modifier.fillMaxWidth().height(140.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = SpotifyGreen,
                                 focusedBorderColor = SpotifyGreen,
                                 unfocusedBorderColor = SpotifyBorder
                             )
@@ -551,17 +564,21 @@ fun SpotifyRadarApp() {
                     }
                 }
 
-                // Search Filter for lists
+                // Search Filter for lists with WHITE text
                 if (isMatchedExpanded || isIndieExpanded) {
                     item {
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
+                            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
                             placeholder = { Text("Поиск артиста...", color = Color.Gray, fontSize = 13.sp) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = SpotifyGreen,
                                 focusedBorderColor = SpotifyGreen,
                                 unfocusedBorderColor = SpotifyBorder
                             )
@@ -589,7 +606,7 @@ fun SpotifyRadarApp() {
                                 modifier = Modifier.padding(8.dp)
                             )
                         } else {
-                            val displayList = filteredMatched.take(80)
+                            val displayList = filteredMatched.take(matchedLimit)
                             displayList.forEach { artist ->
                                 ArtistRow(
                                     rankText = "#${artist.rank}",
@@ -602,14 +619,21 @@ fun SpotifyRadarApp() {
                                     }
                                 )
                             }
-                            if (filteredMatched.size > 80) {
-                                Text(
-                                    text = "Показано 80 из ${filteredMatched.size} артистов",
-                                    color = Color.Gray,
-                                    fontSize = 11.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                                )
+                            if (filteredMatched.size > matchedLimit) {
+                                TextButton(
+                                    onClick = {
+                                        haptic()
+                                        matchedLimit += 35
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "Показать ещё (+35)",
+                                        color = SpotifyGreen,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
                             }
                         }
                     }
@@ -635,7 +659,7 @@ fun SpotifyRadarApp() {
                                 modifier = Modifier.padding(8.dp)
                             )
                         } else {
-                            val displayList = filteredIndie.take(80)
+                            val displayList = filteredIndie.take(indieLimit)
                             displayList.forEach { artist ->
                                 ArtistRow(
                                     rankText = "●",
@@ -648,14 +672,21 @@ fun SpotifyRadarApp() {
                                     }
                                 )
                             }
-                            if (filteredIndie.size > 80) {
-                                Text(
-                                    text = "Показано 80 из ${filteredIndie.size} артистов",
-                                    color = Color.Gray,
-                                    fontSize = 11.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                                )
+                            if (filteredIndie.size > indieLimit) {
+                                TextButton(
+                                    onClick = {
+                                        haptic()
+                                        indieLimit += 35
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "Показать ещё (+35)",
+                                        color = Color(0xFFB388FF),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
                             }
                         }
                     }
@@ -888,11 +919,11 @@ fun AccordionSection(
     indicatorColor: Color,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable () -> Unit
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
-        animationSpec = tween(280, easing = FastOutSlowInEasing),
+        animationSpec = tween(320, easing = FastOutSlowInEasing),
         label = "chevronRotation"
     )
 
@@ -902,12 +933,6 @@ fun AccordionSection(
             .clip(RoundedCornerShape(16.dp))
             .background(SpotifyCard)
             .border(1.dp, SpotifyBorder, RoundedCornerShape(16.dp))
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = 0.82f,
-                    stiffness = 380f
-                )
-            )
     ) {
         Row(
             modifier = Modifier
@@ -950,18 +975,28 @@ fun AccordionSection(
             )
         }
 
-        if (isExpanded) {
-            HorizontalDivider(
-                color = SpotifyBorder,
-                thickness = 1.dp
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                content = content
-            )
+        // Visible Animated Collapse/Expand with clipping and fading
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = expandVertically(animationSpec = tween(320, easing = FastOutSlowInEasing)) +
+                    fadeIn(animationSpec = tween(220)),
+            exit = shrinkVertically(animationSpec = tween(280, easing = FastOutSlowInEasing)) +
+                   fadeOut(animationSpec = tween(180))
+        ) {
+            Column {
+                HorizontalDivider(
+                    color = SpotifyBorder,
+                    thickness = 1.dp
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    content()
+                }
+            }
         }
     }
 }
