@@ -564,26 +564,31 @@ fun SpotifyRadarApp() {
                     }
                 }
 
-                // Search Filter for lists with WHITE text
-                if (isMatchedExpanded || isIndieExpanded) {
-                    item {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
-                            placeholder = { Text("Поиск артиста...", color = Color.Gray, fontSize = 13.sp) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                cursorColor = SpotifyGreen,
-                                focusedBorderColor = SpotifyGreen,
-                                unfocusedBorderColor = SpotifyBorder
-                            )
+                // Search Filter - permanently placed above accordions so opening accordions does not cause layout shifts
+                item {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                        placeholder = { Text("Поиск артиста в списках...", color = Color.Gray, fontSize = 13.sp) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                        trailingIcon = {
+                            if (searchQuery.isNotBlank()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Очистить", tint = Color.Gray)
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            cursorColor = SpotifyGreen,
+                            focusedBorderColor = SpotifyGreen,
+                            unfocusedBorderColor = SpotifyBorder
                         )
-                    }
+                    )
                 }
 
                 // 1. Accordion Section: Matched Artists List
@@ -693,29 +698,44 @@ fun SpotifyRadarApp() {
                 }
             }
 
-            // Footer
+            // Footer with Version & Tap to Check Updates
             item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Spotify Radar",
-                    color = Color(0xFF666666),
-                    fontSize = 11.sp,
-                    textAlign = TextAlign.Center,
+                Spacer(modifier = Modifier.height(20.dp))
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
                         .clickable {
+                            haptic()
                             coroutineScope.launch {
                                 Toast.makeText(context, "Проверка обновлений...", Toast.LENGTH_SHORT).show()
                                 val info = UpdateChecker.checkForUpdates(context)
                                 if (info != null) {
                                     updateInfo = info
                                 } else {
-                                    Toast.makeText(context, "У вас последняя версия!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "У вас установлена последняя версия (v1.2.${AppVersion.CURRENT_RUN_NUMBER})!", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         }
-                        .padding(bottom = 24.dp)
-                )
+                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Spotify Radar • v1.2.${AppVersion.CURRENT_RUN_NUMBER}",
+                        color = Color(0xFF888888),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = "Нажмите, чтобы проверить обновления",
+                        color = Color(0xFF555555),
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
     }
