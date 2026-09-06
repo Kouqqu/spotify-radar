@@ -142,20 +142,12 @@ fun SpotifyRadarApp() {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(SpotifyGreen),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = null,
-                                tint = Color.Black,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_spotify),
+                            contentDescription = "Spotify Logo",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(34.dp)
+                        )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "Spotify Radar",
