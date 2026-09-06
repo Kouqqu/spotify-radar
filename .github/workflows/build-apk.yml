@@ -41,7 +41,7 @@ jobs:
           cd android
           gradle wrapper --gradle-version 8.4
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --no-daemon > gradle_build.log 2>&1 || (echo "=== GRADLE LOG START ===" && tail -n 120 gradle_build.log && echo "=== GRADLE LOG END ===" && exit 1)
+          ./gradlew assembleDebug --no-daemon
           cp app/build/outputs/apk/debug/app-debug.apk ../SpotifyRadar.apk
 
       - name: Upload Build Log
