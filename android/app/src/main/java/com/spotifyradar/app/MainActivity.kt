@@ -806,14 +806,39 @@ fun SpotifyRadarApp() {
         )
     }
 
-    // Modal: Song Details
+    // Modal: Song Details with direct Spotify Launch
     val artistDetails = selectedArtistForDetails
     if (artistDetails != null) {
         AlertDialog(
             onDismissRequest = { selectedArtistForDetails = null },
             confirmButton = {
+                Button(
+                    onClick = {
+                        haptic()
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("spotify:search:${Uri.encode(artistDetails.first)}"))
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/search/${Uri.encode(artistDetails.first)}"))
+                            context.startActivity(webIntent)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_spotify),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("В Spotify", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = { selectedArtistForDetails = null }) {
-                    Text("Закрыть", color = SpotifyGreen)
+                    Text("Закрыть", color = Color.Gray)
                 }
             },
             title = {
@@ -834,12 +859,38 @@ fun SpotifyRadarApp() {
                     )
                     LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
                         items(artistDetails.second) { track ->
-                            Text(
-                                text = "• $track",
-                                color = Color.White,
-                                fontSize = 13.sp,
-                                modifier = Modifier.padding(vertical = 3.dp)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        haptic()
+                                        val query = "${artistDetails.first} $track"
+                                        try {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("spotify:search:${Uri.encode(query)}"))
+                                            context.startActivity(intent)
+                                        } catch (e: Exception) {
+                                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com/search/${Uri.encode(query)}"))
+                                            context.startActivity(webIntent)
+                                        }
+                                    }
+                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "• $track",
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_spotify),
+                                    contentDescription = "Слушать в Spotify",
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }

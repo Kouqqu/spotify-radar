@@ -325,11 +325,19 @@
 
       <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg p-1">✕</button>
 
-      <div class="flex items-center gap-2.5 mb-1.5">
-        <span id="modalRankBadge" class="text-xs font-bold px-2 py-0.5 bg-[#242424] text-[#1ed760] rounded-md">#0</span>
-        <h3 id="modalArtistName" class="text-lg font-bold text-white truncate">Artist Name</h3>
+      <div class="flex items-center justify-between gap-2 mb-1.5 pr-8">
+        <div class="flex items-center gap-2 truncate">
+          <span id="modalRankBadge" class="text-xs font-bold px-2 py-0.5 bg-[#242424] text-[#1ed760] rounded-md shrink-0">#0</span>
+          <h3 id="modalArtistName" class="text-lg font-bold text-white truncate">Artist Name</h3>
+        </div>
       </div>
-      <p class="text-xs text-gray-400 mb-3">Песен в плейлисте: <b id="modalTrackCount" class="text-white">0</b></p>
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <p class="text-xs text-gray-400">Песен в плейлисте: <b id="modalTrackCount" class="text-white">0</b></p>
+        <a id="modalSpotifyArtistBtn" href="#" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-[#1ed760]/15 text-[#1ed760] hover:bg-[#1ed760]/25 transition-colors">
+          <i class="fa-brands fa-spotify"></i>
+          <span>В Spotify</span>
+        </a>
+      </div>
 
       <div id="modalTrackList" class="space-y-1.5 overflow-y-auto pr-1 flex-1"></div>
     </div>
@@ -1019,18 +1027,25 @@
       }
 
       document.getElementById('modalTrackCount').innerText = data.tracks.length;
+      
+      const artistQuery = encodeURIComponent(data.name);
+      document.getElementById('modalSpotifyArtistBtn').href = `https://open.spotify.com/search/${artistQuery}`;
 
       const trackListContainer = document.getElementById('modalTrackList');
       trackListContainer.innerHTML = data.tracks.map((t, idx) => {
         const meta = [t.album, t.year].filter(Boolean).join(' • ');
+        const trackQuery = encodeURIComponent(`${t.title} ${data.name}`);
+        const spotifyUrl = `https://open.spotify.com/search/${trackQuery}`;
 
         return `
-          <div class="flex items-center justify-between p-3 bg-[#141414] border border-[#242424] rounded-xl text-xs">
-            <div class="truncate mr-3">
+          <div class="flex items-center justify-between p-3 bg-[#141414] border border-[#242424] rounded-xl text-xs group hover:border-[#1ed760]/30 transition-colors">
+            <div class="truncate mr-3 flex-1">
               <div class="font-semibold text-white truncate">${t.title}</div>
               ${meta ? `<div class="text-gray-400 text-[11px] truncate mt-0.5">${meta}</div>` : ''}
             </div>
-            <span class="text-gray-400 font-mono text-[11px] shrink-0">#${idx + 1}</span>
+            <a href="${spotifyUrl}" target="_blank" class="p-1.5 text-gray-400 hover:text-[#1ed760] transition-colors shrink-0" title="Найти в Spotify">
+              <i class="fa-brands fa-spotify text-base"></i>
+            </a>
           </div>
         `;
       }).join('');

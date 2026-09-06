@@ -69,8 +69,8 @@ jobs:
           body: |
             ### Обновление v1.2.${{ github.run_number }}
             
-            - Добавлен официальный векторный логотип Spotify в шапку приложения
-            - Дополнительная оптимизация оформления интерфейса
+            - Прямой переход в Spotify для любого артиста и трека в один клик
+            - Интеграция официального логотипа Spotify
           files: android/app/build/outputs/apk/debug/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
