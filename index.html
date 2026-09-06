@@ -527,13 +527,14 @@
       const fPanel = document.getElementById('filePanel');
       const tPanel = document.getElementById('textPanel');
 
+      const isBetaActive = !sBtn.classList.contains('hidden');
       const activeClass = "sp-btn-press py-2.5 font-bold rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-1.5";
       const inactiveClass = "sp-btn-press py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-1.5";
 
       sPanel.classList.add('hidden');
       fPanel.classList.add('hidden');
       tPanel.classList.add('hidden');
-      sBtn.className = inactiveClass;
+      sBtn.className = inactiveClass + (isBetaActive ? "" : " hidden");
       fBtn.className = inactiveClass;
       tBtn.className = inactiveClass;
 
