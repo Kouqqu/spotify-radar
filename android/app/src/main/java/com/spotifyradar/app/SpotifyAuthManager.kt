@@ -114,7 +114,7 @@ object SpotifyAuthManager {
                 val name = json.optString("display_name", json.optString("id", "Пользователь"))
                 val images = json.optJSONArray("images")
                 var avatarUrl: String? = null
-                if (images != null && images.length > 0) {
+                if (images != null && images.length() > 0) {
                     avatarUrl = images.getJSONObject(0).optString("url")
                 }
                 return@withContext SpotifyUser(name, avatarUrl)
@@ -142,7 +142,7 @@ object SpotifyAuthManager {
                         val tracksObj = item.optJSONObject("tracks")
                         val count = tracksObj?.optInt("total", 0) ?: 0
                         val images = item.optJSONArray("images")
-                        val img = if (images != null && images.length > 0) images.getJSONObject(0).optString("url") else null
+                        val img = if (images != null && images.length() > 0) images.getJSONObject(0).optString("url") else null
                         list.add(SpotifyPlaylist(id, name, count, img))
                     }
                 }
@@ -153,8 +153,8 @@ object SpotifyAuthManager {
         list
     }
 
-    suspend fun fetchPlaylistTracks(token: String, playlistId: String): List<RadarAnalyzer.Track> = withContext(Dispatchers.IO) {
-        val tracks = mutableListOf<RadarAnalyzer.Track>()
+    suspend fun fetchPlaylistTracks(token: String, playlistId: String): List<Pair<String, String>> = withContext(Dispatchers.IO) {
+        val tracks = mutableListOf<Pair<String, String>>()
         try {
             var urlStr: String? = "https://api.spotify.com/v1/playlists/$playlistId/tracks?limit=100"
             while (urlStr != null && tracks.size < 500) {
@@ -169,10 +169,6 @@ object SpotifyAuthManager {
                             val item = items.optJSONObject(i) ?: continue
                             val trackObj = item.optJSONObject("track") ?: continue
                             val title = trackObj.optString("name", "Без названия")
-                            val albumObj = trackObj.optJSONObject("album")
-                            val album = albumObj?.optString("name", "") ?: ""
-                            val releaseDate = albumObj?.optString("release_date", "") ?: ""
-                            val year = if (releaseDate.length >= 4) releaseDate.substring(0, 4) else ""
                             val artistsArr = trackObj.optJSONArray("artists")
                             val artistNames = mutableListOf<String>()
                             if (artistsArr != null) {
@@ -181,7 +177,8 @@ object SpotifyAuthManager {
                                     artistNames.add(art.optString("name"))
                                 }
                             }
-                            tracks.add(RadarAnalyzer.Track(title, artistNames, album, year))
+                            val artistLine = artistNames.joinToString(", ")
+                            tracks.add(Pair(title, artistLine))
                         }
                     }
                     urlStr = if (json.has("next") && !json.isNull("next")) json.getString("next") else null
