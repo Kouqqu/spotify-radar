@@ -87,6 +87,9 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
     val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
 
+    var isDevBetaEnabled by remember { mutableStateOf(false) }
+    var secretTapCount by remember { mutableStateOf(0) }
+    var lastSecretTapTime by remember { mutableStateOf(0L) }
     var selectedTab by remember { mutableStateOf(0) }
     var spotifyToken by remember { mutableStateOf<String?>(SpotifyAuthManager.getSavedToken(context)) }
     var spotifyUser by remember { mutableStateOf<SpotifyUser?>(null) }
@@ -207,7 +210,31 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                             painter = painterResource(id = R.drawable.ic_spotify),
                             contentDescription = "Spotify Logo",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastSecretTapTime > 3000L) {
+                                        secretTapCount = 1
+                                    } else {
+                                        secretTapCount++
+                                    }
+                                    lastSecretTapTime = now
+                                    haptic()
+
+                                    if (secretTapCount >= 7) {
+                                        secretTapCount = 0
+                                        isDevBetaEnabled = !isDevBetaEnabled
+                                        if (isDevBetaEnabled) {
+                                            selectedTab = 2 // Switch to beta Spotify tab
+                                            Toast.makeText(context, "Режим бета-теста Spotify активирован! 🧪", Toast.LENGTH_SHORT).show()
+                                        } else {
+                                            selectedTab = 0
+                                            Toast.makeText(context, "Бета-тест скрыт", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
@@ -275,8 +302,9 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                 )
             }
 
-            // Animated Sliding Tabs Selector (3 Tabs: Spotify, CSV, Text)
+            // Animated Sliding Tabs Selector (Clean 2 Tabs by default: CSV & Text, 3rd if Beta enabled)
             item {
+                val tabCount = if (isDevBetaEnabled) 3 else 2
                 BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -284,9 +312,9 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                         .border(1.dp, SpotifyBorder, RoundedCornerShape(14.dp))
                         .padding(4.dp)
                 ) {
-                    val tabWidth = maxWidth / 3
+                    val tabWidth = maxWidth / tabCount
                     val indicatorOffset by animateDpAsState(
-                        targetValue = tabWidth * selectedTab,
+                        targetValue = tabWidth * selectedTab.coerceIn(0, tabCount - 1),
                         animationSpec = spring(dampingRatio = 0.8f, stiffness = 450f),
                         label = "tabIndicatorOffset"
                     )
@@ -304,8 +332,8 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                     // Tab buttons
                     Row(modifier = Modifier.fillMaxWidth()) {
                         TabButton(
-                            title = "Spotify",
-                            icon = Icons.Default.AccountCircle,
+                            title = "Файл .CSV",
+                            icon = Icons.Default.Add,
                             isSelected = selectedTab == 0,
                             modifier = Modifier.weight(1f)
                         ) {
@@ -313,29 +341,31 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                             selectedTab = 0
                         }
                         TabButton(
-                            title = "Файл",
-                            icon = Icons.Default.Add,
+                            title = "Текстом",
+                            icon = Icons.Default.Edit,
                             isSelected = selectedTab == 1,
                             modifier = Modifier.weight(1f)
                         ) {
                             haptic()
                             selectedTab = 1
                         }
-                        TabButton(
-                            title = "Текст",
-                            icon = Icons.Default.Edit,
-                            isSelected = selectedTab == 2,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            haptic()
-                            selectedTab = 2
+                        if (isDevBetaEnabled) {
+                            TabButton(
+                                title = "Spotify (Beta)",
+                                icon = Icons.Default.AccountCircle,
+                                isSelected = selectedTab == 2,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                haptic()
+                                selectedTab = 2
+                            }
                         }
                     }
                 }
             }
 
-                        // Tab 0: Spotify Connect & Playlists Card
-            if (selectedTab == 0) {
+                        // Tab 2: Spotify Connect (Secret Beta)
+            if (isDevBetaEnabled && selectedTab == 2) {
                 item {
                     Column(
                         modifier = Modifier
@@ -640,8 +670,8 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                 }
             }
 
-            // Tab 1: CSV Upload Card
-            if (selectedTab == 1) {
+            // Tab 0: CSV Upload Card with Exportify link and steps
+            if (selectedTab == 0) {
                 item {
                     Column(
                         modifier = Modifier
@@ -657,15 +687,54 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "Экспортируй свой Spotify-плейлист через сервис Exportify в формате .csv",
-                            color = SpotifyTextSecondary,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
+                        // Step-by-step guide card
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF141414), RoundedCornerShape(12.dp))
+                                .border(1.dp, Color(0xFF262626), RoundedCornerShape(12.dp))
+                                .padding(14.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Info, contentDescription = null, tint = SpotifyGreen, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Как получить .CSV плейлиста:",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "1. Нажми кнопку ниже, чтобы открыть Exportify\n2. Нажми «Get Started» и войди в Spotify\n3. Нажми «Export» напротив нужного плейлиста\n4. Выбери скачанный файл кнопкой ниже",
+                                color = SpotifyTextSecondary,
+                                fontSize = 12.sp,
+                                lineHeight = 18.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Exportify External Link Button
+                        OutlinedButton(
+                            onClick = {
+                                haptic()
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://exportify.net"))
+                                context.startActivity(intent)
+                            },
+                            border = BorderStroke(1.dp, Color(0xFF383838)),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth().height(44.dp)
+                        ) {
+                            Text("1. Открыть exportify.net ↗", color = SpotifyGreen, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // File Picker Button
                         Button(
                             onClick = {
                                 haptic()
@@ -677,32 +746,14 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Выбрать .csv файл", color = Color.Black, fontWeight = FontWeight.Bold)
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Demo Button
-                        OutlinedButton(
-                            onClick = {
-                                haptic()
-                                val demoText = "The Weeknd\nTaylor Swift\nBillie Eilish\nPost Malone\nDua Lipa\nKanye West\nLana Del Rey\nKendrick Lamar\nShortparis\nХаски\nДайте Танк (!)\nMolchat Doma\nBones\nIC3PEAK\nSaluki\nBoulevard Depo"
-                                val demoTracks = RadarAnalyzer.parseText(demoText)
-                                analysisResult = RadarAnalyzer.analyze(demoTracks)
-                                Toast.makeText(context, "Загружен демо-плейлист", Toast.LENGTH_SHORT).show()
-                            },
-                            border = BorderStroke(1.dp, SpotifyBorder),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Загрузить демо-плейлист", color = Color.White, fontSize = 13.sp)
+                            Text("2. Выбрать файл .csv", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }
             }
 
-            // Tab 2: Manual Text Input
-            if (selectedTab == 2) {
+            // Tab 1: Manual Text Input
+            if (selectedTab == 1) {
                 item {
                     Column(
                         modifier = Modifier

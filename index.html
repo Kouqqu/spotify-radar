@@ -99,7 +99,7 @@
     <!-- Header -->
     <header class="text-center my-4 sm:my-6 flex flex-col items-center">
       <div class="flex items-center gap-3 mb-1">
-        <i class="fa-brands fa-spotify text-4xl text-[#1ed760]"></i>
+        <i id="headerSpotifyLogo" onclick="handleSecretLogoClick()" class="fa-brands fa-spotify text-4xl text-[#1ed760] cursor-pointer select-none"></i>
         <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Top 500 Radar</h1>
       </div>
       <p class="text-gray-400 text-xs sm:text-sm max-w-sm">
@@ -111,20 +111,20 @@
     <main class="w-full">
 
       <!-- Mode Switcher -->
-      <div class="grid grid-cols-3 gap-1 bg-[#181818] p-1 rounded-xl mb-5 border border-[#242424] text-xs sm:text-sm">
-        <button id="tabSpotifyBtn" onclick="switchTab('spotify')" class="sp-btn-press py-2.5 font-bold rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-1.5">
-          <i class="fa-brands fa-spotify text-[#1ed760] text-sm sm:text-base"></i> <span class="truncate">Войти</span>
-        </button>
-        <button id="tabFileBtn" onclick="switchTab('file')" class="sp-btn-press py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-1.5">
+      <div id="modeSwitcher" class="grid grid-cols-2 gap-1 bg-[#181818] p-1 rounded-xl mb-5 border border-[#242424] text-xs sm:text-sm">
+        <button id="tabFileBtn" onclick="switchTab('file')" class="sp-btn-press py-2.5 font-bold rounded-lg bg-[#282828] text-white transition flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-file-csv text-[#1ed760]"></i> <span class="truncate">Файл .csv</span>
         </button>
         <button id="tabTextBtn" onclick="switchTab('text')" class="sp-btn-press py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-align-left"></i> <span class="truncate">Текст</span>
         </button>
+        <button id="tabSpotifyBtn" onclick="switchTab('spotify')" class="sp-btn-press py-2.5 font-medium rounded-lg text-gray-400 hover:text-white transition flex items-center justify-center gap-1.5 hidden">
+          <i class="fa-brands fa-spotify text-[#1ed760] text-sm sm:text-base"></i> <span class="truncate">Spotify (Beta)</span>
+        </button>
       </div>
 
       <!-- Panel 0: Spotify Connect -->
-      <div id="spotifyPanel" class="sp-card p-5 sm:p-6 rounded-2xl mb-6">
+      <div id="spotifyPanel" class="sp-card p-5 sm:p-6 rounded-2xl mb-6 hidden">
         <div class="text-center py-2">
           <div class="w-14 h-14 rounded-full bg-[#1ed760]/15 border border-[#1ed760]/30 flex items-center justify-center mx-auto mb-3 text-2xl text-[#1ed760]">
             <i class="fa-brands fa-spotify"></i>
@@ -161,7 +161,7 @@
       </div>
 
       <!-- Panel 1: File Drop -->
-      <div id="filePanel" class="sp-card p-5 sm:p-6 rounded-2xl mb-6 hidden">
+      <div id="filePanel" class="sp-card p-5 sm:p-6 rounded-2xl mb-6">
         
         <!-- Guide -->
         <div class="mb-5 p-3.5 rounded-xl bg-[#121212] border border-[#242424] text-xs text-gray-400">
@@ -488,6 +488,35 @@
     const SPOTIFY_SCOPES = 'playlist-read-private playlist-read-collaborative user-library-read user-read-private user-read-email';
 
     let spotifyAccessToken = null;
+    let secretClickCount = 0;
+    let secretClickTimer = null;
+
+    function handleSecretLogoClick() {
+      secretClickCount++;
+      triggerHaptic(10);
+      clearTimeout(secretClickTimer);
+      secretClickTimer = setTimeout(() => {
+        secretClickCount = 0;
+      }, 3000);
+
+      if (secretClickCount >= 7) {
+        secretClickCount = 0;
+        const spotifyBtn = document.getElementById('tabSpotifyBtn');
+        const switcher = document.getElementById('modeSwitcher');
+        if (spotifyBtn.classList.contains('hidden')) {
+          spotifyBtn.classList.remove('hidden');
+          switcher.className = "grid grid-cols-3 gap-1 bg-[#181818] p-1 rounded-xl mb-5 border border-[#242424] text-xs sm:text-sm";
+          showToast('Режим бета-теста Spotify активирован! 🧪');
+          switchTab('spotify');
+        } else {
+          spotifyBtn.classList.add('hidden');
+          switcher.className = "grid grid-cols-2 gap-1 bg-[#181818] p-1 rounded-xl mb-5 border border-[#242424] text-xs sm:text-sm";
+          showToast('Бета-тест скрыт');
+          switchTab('file');
+        }
+      }
+    }
+
 
     function switchTab(mode) {
       triggerHaptic(10);
