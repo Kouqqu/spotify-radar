@@ -28,7 +28,7 @@ data class SpotifyPlaylist(
 object SpotifyAuthManager {
     const val CLIENT_ID = "10a760e2d5df4b3f81303d4bdd74ddff"
     const val REDIRECT_URI = "spotifyradar://callback"
-    const val SCOPES = "playlist-read-private playlist-read-collaborative user-library-read"
+    const val SCOPES = "playlist-read-private playlist-read-collaborative user-read-private user-read-email"
 
     private const val PREFS = "spotify_radar_auth"
     private const val KEY_TOKEN = "access_token"
@@ -71,7 +71,7 @@ object SpotifyAuthManager {
         context.startActivity(intent)
     }
 
-    suspend fun exchangeCodeForToken(context: Context, code: String): String? = withContext(Dispatchers.IO) {
+    suspend fun exchangeCodeForTokenDetailed(context: Context, code: String): Pair<String?, String?> = withContext(Dispatchers.IO) {
         try {
             val verifier = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .getString(KEY_VERIFIER, "") ?: ""
@@ -90,18 +90,26 @@ object SpotifyAuthManager {
 
             conn.outputStream.use { it.write(postParams.toByteArray(Charsets.UTF_8)) }
 
-            if (conn.responseCode == 200) {
-                val json = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+            val responseCode = conn.responseCode
+            val responseText = if (responseCode in 200..299) {
+                conn.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $responseCode"
+            }
+
+            if (responseCode == 200) {
+                val json = JSONObject(responseText)
                 val token = json.optString("access_token")
                 if (token.isNotBlank()) {
                     saveToken(context, token)
-                    return@withContext token
+                    return@withContext Pair(token, null)
                 }
             }
+            return@withContext Pair(null, "Response $responseCode: $responseText")
         } catch (e: Exception) {
             e.printStackTrace()
+            return@withContext Pair(null, e.message ?: "Unknown error")
         }
-        null
     }
 
     suspend fun fetchCurrentUser(token: String): SpotifyUser? = withContext(Dispatchers.IO) {

@@ -93,6 +93,7 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
     var spotifyPlaylists by remember { mutableStateOf<List<SpotifyPlaylist>>(emptyList()) }
     var isPlaylistsLoading by remember { mutableStateOf(false) }
     var isAnalyzingPlaylist by remember { mutableStateOf(false) }
+    var spotifyAuthError by remember { mutableStateOf<String?>(null) }
     var textInput by remember { mutableStateOf("") }
     var analysisResult by remember { mutableStateOf<RadarAnalyzer.AnalysisResult?>(null) }
     var searchQuery by remember { mutableStateOf("") }
@@ -111,13 +112,15 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
     // Handle Spotify Auth Code
     LaunchedEffect(authCodeFlow) {
         authCodeFlow?.collect { code ->
-            Toast.makeText(context, "Вход через Spotify...", Toast.LENGTH_SHORT).show()
-            val token = SpotifyAuthManager.exchangeCodeForToken(context, code)
+            spotifyAuthError = null
+            Toast.makeText(context, "Обмен кода авторизации...", Toast.LENGTH_SHORT).show()
+            val (token, err) = SpotifyAuthManager.exchangeCodeForTokenDetailed(context, code)
             if (token != null) {
                 spotifyToken = token
-                Toast.makeText(context, "Успешный вход в Spotify!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Авторизован в Spotify!", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(context, "Ошибка получения токена", Toast.LENGTH_SHORT).show()
+                spotifyAuthError = "Ошибка получения токена: $err"
+                Toast.makeText(context, "Ошибка токена: $err", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -127,18 +130,16 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
         val token = spotifyToken
         if (token != null) {
             isPlaylistsLoading = true
+            spotifyAuthError = null
             val user = SpotifyAuthManager.fetchCurrentUser(token)
-            if (user == null) {
-                // Token might be expired
-                SpotifyAuthManager.logout(context)
-                spotifyToken = null
-                isPlaylistsLoading = false
-            } else {
+            if (user != null) {
                 spotifyUser = user
                 val playlists = SpotifyAuthManager.fetchUserPlaylists(token)
                 spotifyPlaylists = playlists
-                isPlaylistsLoading = false
+            } else {
+                spotifyAuthError = "Не удалось загрузить профиль. Проверьте соединение или User Management в Spotify Dashboard."
             }
+            isPlaylistsLoading = false
         } else {
             spotifyUser = null
             spotifyPlaylists = emptyList()
@@ -367,9 +368,20 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                             )
                             Spacer(modifier = Modifier.height(18.dp))
 
+                            if (spotifyAuthError != null) {
+                                Text(
+                                    text = spotifyAuthError!!,
+                                    color = Color(0xFFFF6B6B),
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+                            }
+
                             Button(
                                 onClick = {
                                     haptic()
+                                    spotifyAuthError = null
                                     SpotifyAuthManager.startAuth(context)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = SpotifyGreen),
@@ -601,8 +613,8 @@ fun SpotifyRadarApp(authCodeFlow: kotlinx.coroutines.flow.SharedFlow<String>? = 
                 }
             }
 
-            // Tab 1: Manual Text Input
-            if (selectedTab == 1) {
+            // Tab 2: Manual Text Input
+            if (selectedTab == 2) {
                 item {
                     Column(
                         modifier = Modifier
